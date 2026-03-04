@@ -29,15 +29,17 @@ Each node represents a **class**, **module**, **function group**, or **UI compon
 {
   id: 'className',                    // unique string, used in CONNECTIONS
   label: 'ClassName',                 // display name (header text)
-  type: 'class | module | function | singleton | entry | external | QDialog | widget | slots',
-  // type determines node visual style:
-  //   class      → double border, CLASS badge
-  //   singleton  → dashed border, SINGLETON badge
-  //   module     → solid rounded border, MODULE badge
-  //   function/functions/entry → solid rounded border, FUNC/ENTRY badge
-  //   external   → dotted border, EXT badge
-  //   QDialog/widget/slots → UI widget style, UI badge
-  cls: 'c-class-1',                   // CSS color class (c-class-1 through c-class-12, c-ui)
+  type: 'class | module | function | entry | data | QDialog | widget | slots',
+  // type determines the badge label on the header (all nodes share 6px rounded shape):
+  //   class      → CLASS badge
+  //   module     → MODULE badge
+  //   function/functions → FUNC badge
+  //   entry      → ENTRY badge
+  //   data       → DATA badge
+  //   QDialog/widget/slots → UI badge
+  // External dependencies use the appropriate type (module/class) with `external: true`.
+  external: false,                    // optional — true for third-party dependencies (dashed border + EXT tag)
+  // Visual differentiation is via color auto-assigned by type.
   x: 30, y: 60,                       // default position (pixels)
   w: 280,                             // node width (pixels)
   sections: [                         // method/attribute groups
@@ -49,7 +51,6 @@ Each node represents a **class**, **module**, **function group**, or **UI compon
           id: 'cls.method_name',      // unique, format: nodeId.attrName — used in CONNECTIONS
           name: 'method_name()',       // display text
           val: '→ returns X',          // right-side value text (optional)
-          visibility: 'public',       // 'public' | 'private' | omit for builtin/neutral
           sig: '<span class="sig-name">method_name</span>(<span class="sig-params">param1, param2=default</span>)\n<span class="sig-return">→ ReturnType</span>',  // optional: hover tooltip HTML showing full signature
           // For typed parameters, use: <span class="sig-type">Type</span> in sig
           desc: '函数功能的一行中文描述',  // optional: Chinese description shown in tooltip and call chain
@@ -58,7 +59,6 @@ Each node represents a **class**, **module**, **function group**, or **UI compon
             {                         // children are COLLAPSIBLE by default, user can expand via ▶ toggle
               id: 'cls.sub_func',     // same format as parent attr
               name: 'sub_func()',
-              visibility: 'private',
               sig: '...',             // optional tooltip for child too
             },
           ],
@@ -87,44 +87,19 @@ Each node represents a **class**, **module**, **function group**, or **UI compon
 
 ### Node CSS Classes (Unified Color Scheme)
 
-Colors use Catppuccin Mocha palette. **IMPORTANT**: These color assignments MUST be consistent across ALL diagram pages. The same module/concept should always use the same color class.
-
-| Class | Color | Semantic Meaning |
-|-------|-------|-----------------|
-| c-class-1 | #f9e2af (yellow) | Entry point / pipeline orchestrator |
-| c-class-2 | #a6e3a1 (green) | Core logic / main conversion |
-| c-class-3 | #f38ba8 (red) | GS builder / shape matching |
-| c-class-4 | #cba6f7 (mauve) | Compatibility mode |
-| c-class-5 | #94e2d5 (teal) | Multi-mesh mode |
-| c-class-6 | #89b4fa (blue) | UV cache / shared services |
-| c-class-7 | #74c7ec (sapphire) | External dependencies |
-| c-class-8 | #eba0ac (maroon) | Data types / dataclass |
-| c-class-9 | #b4befe (lavender) | Compat utilities |
-| c-class-10 | #f5c2e7 (pink) | Signals / events |
-| c-class-11 | #89dceb (sky) | Multi-mesh utilities |
-| c-class-12 | #fab387 (peach) | Utils / helpers |
-| c-ui | #f2cdcd (flamingo) | UI components |
-
 ### Node Type Visual Styles
 
-Each node type has a **distinct visual identity** to be easily distinguishable at a glance. These styles are consistent across all diagram pages.
+All node types share the same **unified shape** (6px rounded corners, 1.5px solid border). Types are distinguished by **color** (auto-assigned by type) and the **badge** on the header bar. Nodes with `external: true` get dashed borders and an `EXT` tag.
 
-| type value | Border Style | Shape | Badge |
-|-----------|-------------|-------|-------|
-| class | 3px double border | square corners (4px radius) | CLASS |
-| module | solid + 5px left accent bar | 6px radius, italic header | MODULE |
-| function/functions | 1.5px thin solid | large radius (14px), pill-like | FUNC |
-| entry | 2.5px thick solid + subtle glow | large radius (14px), extra bold header | ENTRY |
-| singleton | 2px dashed border | 8px radius | SINGLETON |
-| external | 1.5px dotted, dimmed (78%) | asymmetric corners (4/12/4/12px) | EXT |
-| data | solid + 4px thick top accent | 6px radius | DATA |
-| QDialog/widget/slots | solid + 4px thick top accent | 8px radius | UI / WIDGET / SLOTS |
+| type value | Header Badge |
+|-----------|-------------|
+| class | CLASS |
+| module | MODULE |
+| function/functions | FUNC |
+| entry | ENTRY |
+| data | DATA |
+| QDialog/widget/slots | UI / WIDGET / SLOTS |
 
-### Attribute Visibility Styles
-
-- `visibility: 'public'` — green left border (`.attr-public`)
-- `visibility: 'private'` — red left border (`.attr-private`)
-- omit or other — no colored border (`.attr-builtin`)
 
 ## CONNECTIONS Array
 
@@ -143,7 +118,7 @@ Each connection is a 4-element or 5-element array:
 
 ### Connection Color Conventions
 
-All connections render with a **solid triangle arrowhead at the midpoint of the curve**, indicating flow direction (caller → callee, emitter → handler). The arrow is placed at the center of the bezier curve using de Casteljau subdivision, not at the endpoint.
+All connections render with a **gradient stroke** that transitions from light (transparent) at the source to full opacity at the target, indicating flow direction (caller → callee, emitter → handler). This provides a clear, static visual indication of data/call direction without arrows or animations.
 
 - `#a6e3a1` (green) — direct function call
 - `#f38ba8` (red) — inheritance / override
@@ -187,10 +162,10 @@ Each group represents a **folder / module / package**:
 When the codebase has a graphical UI (Qt, Web, etc.):
 
 1. Create a dedicated diagram entry for the UI layer
-2. Use `c-ui` class for UI widget/component nodes
+2. Use `widget` type for UI widget/component nodes
 3. Each UI node's sections should list:
    - Widget structure (buttons, layouts)
-   - Event handlers / slots (as `private` visibility attrs)
+   - Event handlers / slots
    - Connected business logic methods (as connections to other class nodes)
 4. Connections from UI event handlers to business logic should use dashed pink lines
 5. The sidebar entry `navLabel` should indicate it's a UI view (e.g., "UI — MainWindow")
@@ -207,26 +182,20 @@ DIAGRAMS.core = {
   navLabel: 'Core',
   navSub: 'src/core/',
   NODES: [
-    { id: 'Engine', label: 'Engine', type: 'class', cls: 'c-class-1', x: 30, y: 60, w: 280, sections: [
+    { id: 'Engine', label: 'Engine', type: 'class', x: 30, y: 60, w: 280, sections: [
       { title: 'Public', attrs: [
-        { id: 'Engine.start', name: 'start()', visibility: 'public' },
-        { id: 'Engine.stop', name: 'stop()', visibility: 'public' },
+        { id: 'Engine.start', name: 'start()' },
+        { id: 'Engine.stop', name: 'stop()' },
       ]},
       { title: 'Private', attrs: [
-        { id: 'Engine._init', name: '_init_subsystems()', visibility: 'private' },
+        { id: 'Engine._init', name: '_init_subsystems()' },
       ]},
     ]},
-    { id: 'Logger', label: 'Logger', type: 'class', cls: 'c-class-6', x: 400, y: 60, w: 240, sections: [
+    { id: 'Logger', label: 'Logger', type: 'class', x: 400, y: 60, w: 240, sections: [
       { title: 'Methods', attrs: [
-        { id: 'Logger.log', name: 'log(msg)', visibility: 'public' },
+        { id: 'Logger.log', name: 'log(msg)' },
       ]},
     ]},
   ],
   CONNECTIONS: [
-    ['Engine._init', 'Logger.log', '#a6e3a1', false],
-  ],
-  GROUPS: [
-    { id: 'grp-core', label: 'core/', nodes: ['Engine', 'Logger'], color: '#89b4fa', bg: 'rgba(137,180,250,0.04)' },
-  ],
-};
-```
+    ['Engine._init', 'Logger.log', '#a6e3a1',

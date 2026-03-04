@@ -48,7 +48,7 @@ Then ask your AI: *"Visualize the code architecture of this project"* or *"Gener
 
 You can also use the viewer independently:
 
-1. Copy `assets/code_flow_graph.html` to your project
+1. Copy `example/code_flow_graph.html` to your project
 2. Create a `code_flow_graph_data.js` file following the format in `references/data_format.md`
 3. Open the HTML file in a browser
 
@@ -60,13 +60,13 @@ See [`references/data_format.md`](references/data_format.md) for the complete da
 
 The viewer supports a dedicated **datatype diagram** that traces how data structures flow through the codebase — from definition to transformation to consumption.
 
-Each node in the datatype diagram represents a data class or type definition (`c-class-8` / Maroon). Connections show how data flows between components:
+Each node in the datatype diagram represents a data class or type definition (peach color, auto-assigned by `type: 'data'`). Connections show how data flows between components:
 
 | Connection Color | Meaning |
 |-----------------|---------|
-| Blue (`#89b4fa`) | Data passed as input / output between functions |
-| Green (`#a6e3a1`) | Data constructed or returned by a function |
-| Peach (`#fab387`) | Data consumed by an external dependency |
+| 🔵 Blue | Data passed as input / output between functions |
+| 🟢 Green | Data constructed or returned by a function |
+| 🟠 Peach | Data consumed by an external dependency |
 
 A typical datatype flow looks like:
 
@@ -85,7 +85,7 @@ DIAGRAMS.datatypes = {
   NODES: [
     {
       id: 'UserInput', label: 'UserInput', type: 'class',
-      cls: 'c-class-8', x: 30, y: 60, w: 240,
+      x: 30, y: 60, w: 240,
       sections: [{ title: 'Fields', attrs: [
         { id: 'UserInput.query', name: 'query: str' },
         { id: 'UserInput.lang',  name: 'lang: str' },
@@ -93,7 +93,7 @@ DIAGRAMS.datatypes = {
     },
     {
       id: 'ParsedRequest', label: 'ParsedRequest', type: 'class',
-      cls: 'c-class-8', x: 340, y: 60, w: 260,
+      x: 340, y: 60, w: 260,
       sections: [{ title: 'Fields', attrs: [
         { id: 'ParsedRequest.tokens', name: 'tokens: List[str]' },
         { id: 'ParsedRequest.intent', name: 'intent: str' },
@@ -108,33 +108,29 @@ DIAGRAMS.datatypes = {
 
 ## Color Scheme
 
-Uses [Catppuccin Mocha](https://github.com/catppuccin/catppuccin) palette with semantic meaning:
+Uses [Catppuccin Mocha](https://github.com/catppuccin/catppuccin) palette. Color is **automatically assigned by node type**:
 
-| Class | Color | Recommended Usage |
-|-------|-------|-------------------|
-| `c-class-1` | 🟡 Yellow | Entry points, main orchestrators, pipeline roots |
-| `c-class-2` | 🟢 Green | Core business logic, primary processing modules |
-| `c-class-3` | 🔴 Red | Pattern matching, builders, constructors |
-| `c-class-4` | 🟣 Mauve | Adapters, wrappers, compatibility layers |
-| `c-class-5` | 🩵 Teal | Specialized processing modes, parallel paths |
-| `c-class-6` | 🔵 Blue | Shared services, caches, registries |
-| `c-class-7` | 💎 Sapphire | External / third-party dependencies |
-| `c-class-8` | 🟤 Maroon | Data types, dataclasses, schemas |
-| `c-class-9` | 💜 Lavender | Utilities, common helpers |
-| `c-class-10` | 🩷 Pink | Signals, events, callbacks |
-| `c-class-11` | ☁️ Sky | Extensions, plugins, optional modules |
-| `c-class-12` | 🟠 Peach | Internal helpers, minor utilities |
-| `c-ui` | 🌸 Flamingo | UI components, widgets, views |
+| Type | Color |
+|------|-------|
+| `entry` | 🟡 Yellow |
+| `class` | 🔵 Blue |
+| `module` | 🟢 Green |
+| `function` | 🟣 Mauve |
+| `data` | 🟠 Peach |
+| `widget` | 🩷 Flamingo |
+| `slots` | 🩷 Pink |
+
+> Nodes with `external: true` are rendered with dashed borders and an `EXT` tag to indicate third-party dependencies.
 
 ## Connection Types
 
 | Color | Style | Meaning |
 |-------|-------|---------|
-| Green (`#a6e3a1`) | Solid | Direct function call |
-| Red (`#f38ba8`) | Solid | Inheritance / override |
-| Blue (`#89b4fa`) | Solid | Data flow |
-| Pink (`#f5c2e7`) | Dashed | Signal / event / callback |
-| Peach (`#fab387`) | Solid | External dependency |
+| 🟢 Green | Solid | Direct function call |
+| 🔴 Red | Solid | Inheritance / override |
+| 🔵 Blue | Solid | Data flow |
+| 🩷 Pink | Dashed | Signal / event / callback |
+| 🟠 Peach | Solid | External dependency |
 
 ## Keyboard Shortcuts
 

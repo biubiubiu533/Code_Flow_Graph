@@ -29,8 +29,8 @@ body{background:#1e1e2e;color:#cdd6f4;font-family:'Segoe UI','Microsoft YaHei',s
 #header{background:rgba(30,30,46,.92);backdrop-filter:blur(6px);padding:8px 0 6px;text-align:center;border-bottom:1px solid #313244;z-index:100}
 #header h1{color:#89b4fa;font-size:18px;margin-bottom:2px}
 #header .sub{color:#6c7086;font-size:11px}
-.legend{display:flex;gap:12px;justify-content:center;margin-top:4px;flex-wrap:wrap;font-size:11px}
-.legend-item{display:flex;align-items:center;gap:4px}
+.legend{display:flex;gap:8px;justify-content:center;margin-top:4px;flex-wrap:wrap;font-size:13px;align-items:center}
+.legend-item{display:flex;align-items:center;gap:3px}
 .legend-color{width:12px;height:12px;border-radius:2px;border:1px solid #45475a}
 #content-area{flex:1;display:flex;position:relative;overflow:hidden}
 #viewport{flex:1;position:relative;overflow:hidden;cursor:grab}
@@ -40,7 +40,7 @@ svg#svg{position:absolute;top:0;left:0;pointer-events:none;z-index:1;overflow:vi
 svg#svg path{fill:none;stroke-width:1.6;opacity:.45;transition:opacity .2s,stroke-width .2s}
 svg#svg path.hl{opacity:1;stroke-width:3}
 svg#svg path.dim{opacity:.06}
-svg#svg marker polygon{transition:opacity .2s}
+
 /* Call chain detail panel */
 #detail-panel{width:0;min-width:0;background:#181825;border-left:1px solid #313244;overflow-y:auto;transition:width .25s ease,min-width .25s ease;z-index:150;display:flex;flex-direction:column}
 #detail-panel.open{width:360px;min-width:360px}
@@ -68,41 +68,14 @@ svg#svg marker polygon{transition:opacity .2s}
 .ct-children{padding-left:16px;border-left:1px solid #313244;margin-left:6px}
 .ct-children.collapsed{display:none}
 /* Node styles */
-.node{position:absolute;border-radius:8px;border:2px solid;z-index:2;box-shadow:0 3px 12px rgba(0,0,0,.4);transition:opacity .2s;min-width:50px}
+.node{position:absolute;border-radius:6px;border:1.5px solid;z-index:2;box-shadow:0 3px 12px rgba(0,0,0,.4);transition:opacity .2s;min-width:50px}
 .node.dim{opacity:.18}
 .node.dragging{z-index:10;box-shadow:0 8px 30px rgba(0,0,0,.6)}
-/* ── Class node: double border, square corners ── */
-.node.node-class{border-width:3px;border-style:double;border-radius:4px}
-.node.node-class .node-header{letter-spacing:.3px;border-radius:2px 2px 0 0}
-/* ── Module node: solid border + left accent bar ── */
-.node.node-module{border-width:1.5px;border-style:solid;border-radius:6px;border-left-width:5px}
-.node.node-module .node-header{border-radius:4px 4px 0 0;font-style:italic}
-/* ── Function node: rounded, thin solid ── */
-.node.node-function{border-width:1.5px;border-style:solid;border-radius:14px}
-.node.node-function .node-header{border-radius:12px 12px 0 0}
-/* ── Entry node: rounded + thick border + glow ── */
-.node.node-entry{border-width:2.5px;border-style:solid;border-radius:14px;box-shadow:0 3px 12px rgba(0,0,0,.4),0 0 12px rgba(249,226,175,.15)}
-.node.node-entry .node-header{border-radius:11px 11px 0 0;font-weight:900}
-/* ── Singleton node: dashed border ── */
-.node.node-singleton{border-width:2px;border-style:dashed;border-radius:8px}
-/* ── External node: dotted border, dimmed, clipped corner ── */
-.node.node-external{border-width:1.5px;border-style:dotted;border-radius:4px 12px 4px 12px;opacity:.78}
-.node.node-external .node-header{border-radius:2px 10px 0 0}
-/* ── Data node: double border, maroon accent ── */
-.node.node-data{border-width:2px;border-style:solid;border-radius:6px;border-top-width:4px}
-.node.node-data .node-header{border-radius:4px 4px 0 0}
-/* ── UI/widget node: top color bar accent ── */
-.node.node-widget{border-width:2px;border-radius:8px;border-top-width:4px}
-.node-header{padding:5px 10px;font-weight:bold;font-size:12px;border-radius:6px 6px 0 0;border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap;cursor:move;user-select:none;display:flex;align-items:center;gap:6px}
-.node-badge{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;opacity:.9}
-.node-badge-class{background:rgba(0,0,0,.3);color:#f9e2af;border:1px solid rgba(249,226,175,.3)}
-.node-badge-func{background:rgba(0,0,0,.3);color:#a6e3a1;border:1px solid rgba(166,227,161,.3)}
-.node-badge-entry{background:rgba(249,226,175,.2);color:#f9e2af;border:1px solid rgba(249,226,175,.5);font-weight:900;letter-spacing:.5px}
-.node-badge-module{background:rgba(0,0,0,.3);color:#89b4fa;border:1px solid rgba(137,180,250,.3)}
-.node-badge-singleton{background:rgba(0,0,0,.3);color:#cba6f7;border:1px solid rgba(203,166,247,.3)}
-.node-badge-data{background:rgba(0,0,0,.3);color:#eba0ac;border:1px solid rgba(235,160,172,.3)}
-.node-badge-ui{background:rgba(0,0,0,.3);color:#f5c2e7;border:1px solid rgba(245,194,231,.3)}
-.node-badge-ext{background:rgba(0,0,0,.3);color:#6c7086;border:1px solid rgba(108,112,134,.3)}
+.node-header{padding:5px 10px;font-weight:bold;font-size:12px;border-radius:4.5px 4.5px 0 0;border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap;cursor:move;user-select:none;display:flex;align-items:center;gap:4px}
+.node-badge{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.node-badge.on-dark{background:rgba(255,255,255,.18);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.2)}
+.node-badge.on-light{background:rgba(0,0,0,.15);color:rgba(0,0,0,.7);border:1px solid rgba(0,0,0,.12)}
+
 .node-type{font-size:9px;font-weight:normal;opacity:.65;margin-left:4px}
 .node-body{padding:3px 0}
 .attr{padding:1px 8px;font-size:10.5px;font-family:'Consolas','Courier New',monospace;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .12s;user-select:none;min-height:18px}
@@ -110,9 +83,6 @@ svg#svg marker polygon{transition:opacity .2s}
 .attr.hl{background:rgba(250,179,135,.35)!important;outline:1px solid rgba(250,179,135,.5)}
 .attr-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .attr-value{color:#a6adc8;font-size:9.5px;margin-left:6px;white-space:nowrap}
-.attr-public{background:rgba(166,227,161,.06);border-left:3px solid #a6e3a1}
-.attr-private{border-left:3px solid #f38ba8}
-.attr-builtin{border-left:3px solid transparent}
 .attr-section{padding:2px 8px 1px;font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#585b70;border-top:1px solid rgba(255,255,255,.04);margin-top:1px}
 /* Collapsible children */
 .attr-toggle{cursor:pointer;user-select:none;font-size:8px;color:#585b70;margin-right:3px;transition:transform .15s,color .15s;display:inline-block;width:10px;text-align:center}
@@ -136,33 +106,23 @@ svg#svg marker polygon{transition:opacity .2s}
 .sig-tooltip .sig-io-label{color:#89b4fa;font-weight:bold;font-family:'Segoe UI','Microsoft YaHei',sans-serif;font-size:10.5px}
 .sig-tooltip .sig-io-input{color:#f9e2af;display:block;padding-left:8px}
 .sig-tooltip .sig-io-output{color:#a6e3a1;display:block;padding-left:8px}
-/* Node color classes — Catppuccin Mocha palette. UNIFIED across all pages by semantic meaning */
-/* c-class-1: yellow — entry/pipeline orchestrator */
-.c-class-1{border-color:#f9e2af;background:#2d2a1e}.c-class-1 .node-header{background:#f9e2af;color:#1e1e2e}
-/* c-class-2: green — core logic / hair conversion */
-.c-class-2{border-color:#a6e3a1;background:#1e2d1e}.c-class-2 .node-header{background:#a6e3a1;color:#1e1e2e}
-/* c-class-3: red — GS builder / shape matching */
-.c-class-3{border-color:#f38ba8;background:#2d1e22}.c-class-3 .node-header{background:#f38ba8;color:#1e1e2e}
-/* c-class-4: mauve — compat mode */
-.c-class-4{border-color:#cba6f7;background:#251e2d}.c-class-4 .node-header{background:#cba6f7;color:#1e1e2e}
-/* c-class-5: teal — multi-mesh mode */
-.c-class-5{border-color:#94e2d5;background:#1e2d2a}.c-class-5 .node-header{background:#94e2d5;color:#1e1e2e}
-/* c-class-6: blue — UV cache / shared services */
-.c-class-6{border-color:#89b4fa;background:#1e222d}.c-class-6 .node-header{background:#89b4fa;color:#1e1e2e}
-/* c-class-7: sapphire — external deps */
-.c-class-7{border-color:#74c7ec;background:#1e272d}.c-class-7 .node-header{background:#74c7ec;color:#1e1e2e}
-/* c-class-8: maroon — data types / dataclass */
-.c-class-8{border-color:#eba0ac;background:#2d1e25}.c-class-8 .node-header{background:#eba0ac;color:#1e1e2e}
-/* c-class-9: lavender — compat utils */
-.c-class-9{border-color:#b4befe;background:#22222d}.c-class-9 .node-header{background:#b4befe;color:#1e1e2e}
-/* c-class-10: pink — signals/events */
-.c-class-10{border-color:#f5c2e7;background:#2d1e28}.c-class-10 .node-header{background:#f5c2e7;color:#1e1e2e}
-/* c-class-11: sky — multi-mesh utils */
-.c-class-11{border-color:#89dceb;background:#1e2a2d}.c-class-11 .node-header{background:#89dceb;color:#1e1e2e}
-/* c-class-12: peach — utils */
-.c-class-12{border-color:#fab387;background:#2d251e}.c-class-12 .node-header{background:#fab387;color:#1e1e2e}
-/* c-ui: flamingo — for UI components */
-.c-ui{border-color:#f2cdcd;background:#2d2225}.c-ui .node-header{background:#f2cdcd;color:#1e1e2e}
+/* Node color classes — Catppuccin Mocha palette. Auto-assigned by node type */
+/* entry: yellow */
+.c-entry{border-color:#f9e2af;background:#2d2a1e}.c-entry .node-header{background:#f9e2af;color:#1e1e2e}
+/* class: blue */
+.c-class{border-color:#89b4fa;background:#1e222d}.c-class .node-header{background:#89b4fa;color:#1e1e2e}
+/* module: green */
+.c-module{border-color:#a6e3a1;background:#1e2d1e}.c-module .node-header{background:#a6e3a1;color:#1e1e2e}
+/* function/functions: mauve */
+.c-function{border-color:#cba6f7;background:#251e2d}.c-function .node-header{background:#cba6f7;color:#1e1e2e}
+/* external marker — dashed border + italic label */
+.node.is-external{border-style:dashed}.node.is-external .node-header .ext-tag{font-size:9px;opacity:.7;margin-left:4px;font-style:italic}
+/* data: peach */
+.c-data{border-color:#fab387;background:#2d251e}.c-data .node-header{background:#fab387;color:#1e1e2e}
+/* widget/QDialog: flamingo */
+.c-widget{border-color:#f2cdcd;background:#2d2225}.c-widget .node-header{background:#f2cdcd;color:#1e1e2e}
+/* slots: pink */
+.c-slots{border-color:#f5c2e7;background:#2d1e28}.c-slots .node-header{background:#f5c2e7;color:#1e1e2e}
 .group-bg{position:absolute;border-radius:12px;border:1.5px dashed;z-index:0;cursor:grab;transition:opacity .2s}
 .group-bg:hover{border-width:2.5px}
 .group-bg.group-dragging{cursor:grabbing;border-width:2.5px;border-style:solid}
@@ -204,20 +164,12 @@ svg#svg marker polygon{transition:opacity .2s}
     <h1 id="diagramTitle"></h1>
     <div class="sub" id="diagramSub"></div>
     <div class="legend" id="legendContainer">
-      <div class="legend-item"><div class="legend-color" style="background:#a6e3a1"></div>public</div>
-      <div class="legend-item"><div class="legend-color" style="background:transparent;border:2px solid #f38ba8"></div>private</div>
-      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:3px double #cdd6f4;border-radius:2px;padding:0 3px;margin-right:2px">C</span>class</div>
-      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1.5px solid #cdd6f4;border-left:4px solid #cdd6f4;border-radius:4px;padding:0 3px;margin-right:2px;font-style:italic">M</span>module</div>
-      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1px solid #cdd6f4;border-radius:10px;padding:0 3px;margin-right:2px">ƒ</span>function</div>
-      <div class="legend-item"><span style="font-size:9px;color:#f9e2af;border:2.5px solid #f9e2af;border-radius:10px;padding:0 3px;margin-right:2px;font-weight:900">E</span>entry</div>
-      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1.5px dashed #cdd6f4;border-radius:3px;padding:0 3px;margin-right:2px">S</span>singleton</div>
-      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1.5px dotted #6c7086;border-radius:2px 8px 2px 8px;padding:0 3px;margin-right:2px;opacity:.7">⊞</span>external</div>
-      <div class="legend-item" style="color:#6c7086">━▶ call ┅▶ signal/event</div>
-      <div class="legend-item"><div class="legend-color" style="background:#a6e3a1"></div><span style="font-size:9px">call</span></div>
-      <div class="legend-item"><div class="legend-color" style="background:#89b4fa"></div><span style="font-size:9px">data</span></div>
-      <div class="legend-item"><div class="legend-color" style="background:#fab387"></div><span style="font-size:9px">extern</span></div>
-      <div class="legend-item"><div class="legend-color" style="background:#f5c2e7"></div><span style="font-size:9px">signal</span></div>
-      <div class="legend-item"><a href="#" id="resetLayoutBtn" style="color:#f38ba8;text-decoration:underline;cursor:pointer;font-size:11px">Reset Layout</a></div>
+      <div class="legend-item" style="color:#6c7086">━ call ┅ signal &nbsp;<span style="display:inline-block;width:40px;height:4px;border-radius:2px;background:linear-gradient(to right,rgba(205,214,244,.2),#cdd6f4);vertical-align:middle"></span> direction</div>
+      <div class="legend-item"><div class="legend-color" style="background:#a6e3a1"></div>call</div>
+      <div class="legend-item"><div class="legend-color" style="background:#89b4fa"></div>data</div>
+      <div class="legend-item"><div class="legend-color" style="background:#fab387"></div>extern</div>
+      <div class="legend-item"><div class="legend-color" style="background:#f5c2e7"></div>signal</div>
+      <div class="legend-item"><a href="#" id="resetLayoutBtn" style="color:#f38ba8;text-decoration:underline;cursor:pointer;font-size:12px">Reset Layout</a></div>
     </div>
   </div>
   <div id="content-area">
@@ -269,34 +221,65 @@ var attrIOMap = {}; // aid -> {input: '', output: ''} for tooltip IO display
 var attrCallChainMap = {}; // aid -> callChain array
 var attrFieldDetailMap = {}; // aid -> fieldDetail object (for data type fields)
 
-// Node type to CSS class mapping
+// Node type to CSS class mapping (unified style, color-only differentiation)
 var NODE_TYPE_MAP = {
-  'class': 'node-class',
-  'singleton': 'node-singleton',
-  'module': 'node-module',
-  'function': 'node-function',
-  'functions': 'node-function',
-  'entry': 'node-entry',
-  'external': 'node-external',
-  'data': 'node-data',
-  'QDialog': 'node-widget',
-  'widget': 'node-widget',
-  'slots': 'node-widget'
+  'class': '',
+  'module': '',
+  'function': '',
+  'functions': '',
+  'entry': '',
+  'data': '',
+  'QDialog': '',
+  'widget': '',
+  'slots': ''
 };
 
 var NODE_BADGE_MAP = {
-  'class': '<span class="node-badge node-badge-class">CLASS</span>',
-  'singleton': '<span class="node-badge node-badge-singleton">SINGLETON</span>',
-  'module': '<span class="node-badge node-badge-module">MODULE</span>',
-  'function': '<span class="node-badge node-badge-func">FUNC</span>',
-  'functions': '<span class="node-badge node-badge-func">FUNC</span>',
-  'entry': '<span class="node-badge node-badge-entry">ENTRY</span>',
-  'external': '<span class="node-badge node-badge-ext">EXT</span>',
-  'data': '<span class="node-badge node-badge-data">DATA</span>',
-  'QDialog': '<span class="node-badge node-badge-ui">UI</span>',
-  'widget': '<span class="node-badge node-badge-ui">WIDGET</span>',
-  'slots': '<span class="node-badge node-badge-ui">SLOTS</span>'
+  'class': 'CLASS',
+  'module': 'MODULE',
+  'function': 'FUNC',
+  'functions': 'FUNC',
+  'entry': 'ENTRY',
+  'data': 'DATA',
+  'QDialog': 'UI',
+  'widget': 'WIDGET',
+  'slots': 'SLOTS'
 };
+
+// Type-to-CSS-class mapping — auto-assign color by node type
+var TYPE_CLS_MAP = {
+  'entry': 'c-entry', 'class': 'c-class', 'module': 'c-module',
+  'function': 'c-function', 'functions': 'c-function',
+  'data': 'c-data',
+  'widget': 'c-widget', 'QDialog': 'c-widget', 'slots': 'c-slots'
+};
+
+// Header background colors by type CSS class — used to determine badge contrast
+var HEADER_COLOR_MAP = {
+  'c-entry': '#f9e2af', 'c-class': '#89b4fa', 'c-module': '#a6e3a1',
+  'c-function': '#cba6f7', 'c-data': '#fab387',
+  'c-widget': '#f2cdcd', 'c-slots': '#f5c2e7'
+};
+
+function hexLuminance(hex) {
+  var r = parseInt(hex.substr(1,2),16)/255;
+  var g = parseInt(hex.substr(3,2),16)/255;
+  var b = parseInt(hex.substr(5,2),16)/255;
+  return 0.299*r + 0.587*g + 0.114*b;
+}
+
+function getBadgeMode(cls) {
+  var col = HEADER_COLOR_MAP[cls] || '#333333';
+  return hexLuminance(col) > 0.55 ? 'on-light' : 'on-dark';
+}
+
+function getBadgeHtml(type, cls) {
+  var text = NODE_BADGE_MAP[type];
+  if (!text) return '';
+  var mode = getBadgeMode(cls);
+  return '<span class="node-badge ' + mode + '">' + text + '</span>';
+}
+
 
 if (typeof DIAGRAMS !== 'undefined' && DIAGRAMS._projectTitle) {
   document.getElementById('sidebarTitle').textContent = DIAGRAMS._projectTitle;
@@ -327,9 +310,6 @@ diagKeys.forEach(function(key) {
 
 function renderAttrHtml(a, isChild, parentHasChildren) {
   var cls = 'attr' + (isChild ? ' attr-child' : '');
-  if (a.visibility === 'public') cls += ' attr-public';
-  else if (a.visibility === 'private') cls += ' attr-private';
-  else cls += ' attr-builtin';
   var valHtml = a.val ? '<span class="attr-value">' + a.val + '</span>' : '';
   var prefix = isChild ? '<span style="color:#585b70;margin-right:3px;font-size:8px">▸</span>' : '';
   return '<div class="' + cls + '" data-aid="' + a.id + '">' + prefix + '<span class="attr-name">' + a.name + '</span>' + valHtml + '</div>';
@@ -360,15 +340,17 @@ function switchDiagram(key) {
 
   NODES.forEach(function(n) {
     var el = document.createElement('div');
-    var nodeTypeCls = NODE_TYPE_MAP[n.type] || 'node-function';
-    el.className = 'node ' + n.cls + ' ' + nodeTypeCls;
+    var typeCls = TYPE_CLS_MAP[n.type] || 'c-class';
+    el.className = 'node ' + typeCls + (n.external ? ' is-external' : '');
     el.dataset.nodeId = n.id;
     var pos = savedPos[n.id] || {x: n.x, y: n.y};
+
     el.style.left = pos.x + 'px';
     el.style.top = pos.y + 'px';
     el.style.width = n.w + 'px';
-    var badge = NODE_BADGE_MAP[n.type] || '';
-    var html = '<div class="node-header" data-drag="' + n.id + '">' + n.label + ' ' + badge + '</div><div class="node-body">';
+    var badge = getBadgeHtml(n.type, typeCls);
+    var extTag = n.external ? '<span class="ext-tag">EXT</span>' : '';
+    var html = '<div class="node-header" data-drag="' + n.id + '">' + n.label + ' ' + badge + extTag + '</div><div class="node-body">';
     (n.sections || []).forEach(function(sec) {
       if (sec.code) html += '<div class="code-block">' + sec.code + '</div>';
       if (sec.title) html += '<div class="attr-section">' + sec.title + '</div>';
@@ -385,9 +367,6 @@ function switchDiagram(key) {
           // Render toggle button inline with the attr
           var toggleId = 'toggle-' + a.id.replace(/\./g, '-');
           var cls = 'attr';
-          if (a.visibility === 'public') cls += ' attr-public';
-          else if (a.visibility === 'private') cls += ' attr-private';
-          else cls += ' attr-builtin';
           var valHtml = a.val ? '<span class="attr-value">' + a.val + '</span>' : '';
           html += '<div class="' + cls + '" data-aid="' + a.id + '">';
           html += '<span class="attr-toggle' + (defaultCollapsed ? '' : ' expanded') + '" data-toggle="' + toggleId + '">▶</span>';
@@ -510,45 +489,33 @@ function getAttrAnchor(aid, side) {
 
 function redrawConnections() {
   svg.innerHTML = ''; connData = [];
-  // Create a <defs> for arrow markers, keyed by color
   var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
   svg.appendChild(defs);
-  var markerCache = {};
-  function getMarker(color) {
-    if (markerCache[color]) return markerCache[color];
-    var safeId = 'arrow-' + color.replace('#', '');
-    var marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-    marker.setAttribute('id', safeId);
-    marker.setAttribute('viewBox', '0 0 10 10');
-    marker.setAttribute('refX', '5');
-    marker.setAttribute('refY', '5');
-    marker.setAttribute('markerWidth', '10');
-    marker.setAttribute('markerHeight', '10');
-    marker.setAttribute('orient', 'auto');
-    var poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    poly.setAttribute('points', '0,1 10,5 0,9');
-    poly.setAttribute('fill', color);
-    marker.appendChild(poly);
-    defs.appendChild(marker);
-    markerCache[color] = 'url(#' + safeId + ')';
-    return markerCache[color];
+  var gradCache = {};
+  // Parse hex color to r,g,b
+  function hexToRgb(hex) {
+    var r = parseInt(hex.substr(1,2),16), g = parseInt(hex.substr(3,2),16), b = parseInt(hex.substr(5,2),16);
+    return {r:r, g:g, b:b};
   }
-  // De Casteljau split of cubic bezier at t=0.5
-  // Given P0,P1,P2,P3, returns {first:[P0,A,B,M], second:[M,C,D,P3]}
-  function splitCubicAt05(x0,y0, x1,y1, x2,y2, x3,y3) {
-    // Level 1
-    var a1x=(x0+x1)/2, a1y=(y0+y1)/2;
-    var a2x=(x1+x2)/2, a2y=(y1+y2)/2;
-    var a3x=(x2+x3)/2, a3y=(y2+y3)/2;
-    // Level 2
-    var b1x=(a1x+a2x)/2, b1y=(a1y+a2y)/2;
-    var b2x=(a2x+a3x)/2, b2y=(a2y+a3y)/2;
-    // Midpoint
-    var mx=(b1x+b2x)/2, my=(b1y+b2y)/2;
-    return {
-      first:  {cp1x:a1x, cp1y:a1y, cp2x:b1x, cp2y:b1y, mx:mx, my:my},
-      second: {cp1x:b2x, cp1y:b2y, cp2x:a3x, cp2y:a3y}
-    };
+  // Create or reuse a gradient for a given color and direction
+  function getGradient(color, x1, y1, x2, y2, idx) {
+    var gradId = 'grad-' + idx;
+    var rgb = hexToRgb(color);
+    var grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+    grad.setAttribute('id', gradId);
+    grad.setAttribute('gradientUnits', 'userSpaceOnUse');
+    grad.setAttribute('x1', x1); grad.setAttribute('y1', y1);
+    grad.setAttribute('x2', x2); grad.setAttribute('y2', y2);
+    var stop0 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop0.setAttribute('offset', '0%');
+    stop0.setAttribute('stop-color', 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0.15)');
+    var stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop1.setAttribute('offset', '100%');
+    stop1.setAttribute('stop-color', color);
+    grad.appendChild(stop0);
+    grad.appendChild(stop1);
+    defs.appendChild(grad);
+    return 'url(#' + gradId + ')';
   }
   CONNECTIONS.forEach(function(c, idx) {
     var srcId = c[0], tgtId = c[1], color = c[2], dashed = c[3];
@@ -567,17 +534,11 @@ function redrawConnections() {
     var dx = Math.abs(p2.x - p1.x), cpOff = Math.max(dx * 0.35, 50);
     var cp1x = srcSide === 'right' ? p1.x + cpOff : p1.x - cpOff;
     var cp2x = tgtSide === 'left' ? p2.x - cpOff : p2.x + cpOff;
-    // Split the cubic bezier at midpoint for marker-mid arrow
-    var s = splitCubicAt05(p1.x, p1.y, cp1x, p1.y, cp2x, p2.y, p2.x, p2.y);
-    // Path: first half C → midpoint, L midpoint (triggers marker-mid), second half C → end
-    var d = 'M ' + p1.x + ' ' + p1.y +
-            ' C ' + s.first.cp1x + ' ' + s.first.cp1y + ', ' + s.first.cp2x + ' ' + s.first.cp2y + ', ' + s.first.mx + ' ' + s.first.my +
-            ' L ' + s.first.mx + ' ' + s.first.my +
-            ' C ' + s.second.cp1x + ' ' + s.second.cp1y + ', ' + s.second.cp2x + ' ' + s.second.cp2y + ', ' + p2.x + ' ' + p2.y;
+    var d = 'M ' + p1.x + ' ' + p1.y + ' C ' + cp1x + ' ' + p1.y + ', ' + cp2x + ' ' + p2.y + ', ' + p2.x + ' ' + p2.y;
     var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', d); path.setAttribute('stroke', color);
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', getGradient(color, p1.x, p1.y, p2.x, p2.y, idx));
     if (dashed) path.setAttribute('stroke-dasharray', '6 4');
-    path.setAttribute('marker-mid', getMarker(color));
     svg.appendChild(path);
     connData.push({srcId: srcId, tgtId: tgtId, path: path, idx: idx});
   });
