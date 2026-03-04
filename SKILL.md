@@ -25,7 +25,7 @@ Generate interactive node-graph HTML diagrams that visualize code structure and 
 
 The output consists of two files placed in a dedicated folder:
 
-1. **`code_flow_graph.html`** — rendering engine (copy from `assets/code_flow_graph.html`)
+1. **`code_flow_graph.html`** — rendering engine (copy from `example/code_flow_graph.html`)
 2. **`code_flow_graph_data.js`** — diagram data (generated per-project)
 
 The HTML loads the JS via `<script src="code_flow_graph_data.js">` and must be in the same directory.
@@ -127,7 +127,7 @@ Create a new folder inside the project for the visualization output. Naming conv
 
 ### Step 3: Copy the HTML Engine
 
-Copy `assets/code_flow_graph.html` to the output folder. Do not modify it.
+Copy `example/code_flow_graph.html` to the output folder. Do not modify it.
 
 #### Engine Features (built-in, code_flow_graph.html)
 

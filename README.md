@@ -48,7 +48,7 @@ Then ask your AI: *"Visualize the code architecture of this project"* or *"Gener
 
 You can also use the viewer independently:
 
-1. Copy `assets/code_flow_graph.html` to your project
+1. Copy `example/code_flow_graph.html` to your project
 2. Create a `code_flow_graph_data.js` file following the format in `references/data_format.md`
 3. Open the HTML file in a browser
 
