@@ -1,6 +1,6 @@
 # Code Graph Viewer
 
-An interactive HTML node-graph viewer skill for [CodeBuddy](https://codebuddy.codes/) (Tencent AI Coding Assistant) that visualizes codebase structure, class relationships, and function call chains.
+An interactive HTML node-graph viewer skill that visualizes codebase structure, class relationships, and function call chains.
 
 ![Catppuccin Mocha Theme](https://img.shields.io/badge/theme-Catppuccin%20Mocha-b4befe?style=flat-square) ![Standalone HTML](https://img.shields.io/badge/output-standalone%20HTML-a6e3a1?style=flat-square) ![No Dependencies](https://img.shields.io/badge/dependencies-none-89b4fa?style=flat-square)
 
@@ -18,25 +18,23 @@ An interactive HTML node-graph viewer skill for [CodeBuddy](https://codebuddy.co
 
 ## How It Works
 
-This is a **CodeBuddy Skill** — when installed, CodeBuddy's AI can automatically generate interactive code architecture diagrams for any codebase you're working on.
-
-The output consists of two files:
+The viewer renders two files together:
 
 | File | Purpose |
 |------|---------|
-| `code_graph_viewer.html` | Rendering engine (provided by this skill, do not modify) |
-| `code_graph_data.js` | Diagram data (generated per-project by CodeBuddy AI) |
+| `code_graph_viewer.html` | Rendering engine (do not modify) |
+| `code_graph_data.js` | Diagram data (generated per-project by your AI assistant) |
 
 Simply place both files in the same directory and open the HTML in a browser.
 
 ## Installation
 
-### As a CodeBuddy Skill
+### As an Agent Skill
 
-Copy the entire repository into your CodeBuddy skills directory:
+Copy the entire repository into your AI agent's skills directory:
 
 ```
-<project>/.codebuddy/skills/code-graph-viewer/
+<project>/.skills/code-graph-viewer/
   SKILL.md
   assets/
     code_graph_viewer.html
@@ -44,7 +42,7 @@ Copy the entire repository into your CodeBuddy skills directory:
     data_format.md
 ```
 
-Then ask CodeBuddy: *"Visualize the code architecture of this project"* or *"Generate a code graph for this module"*.
+Then ask your AI: *"Visualize the code architecture of this project"* or *"Generate a code graph for this module"*.
 
 ### Standalone Usage
 
@@ -96,6 +94,56 @@ DIAGRAMS.core = {
   GROUPS: [
     { id: 'grp-core', label: 'core/', nodes: ['Engine', 'Logger'],
       color: '#89b4fa', bg: 'rgba(137,180,250,0.04)' },
+  ],
+};
+```
+
+## Data Type Flow (Datatype Diagram)
+
+The viewer supports a dedicated **datatype diagram** that traces how data structures flow through the codebase — from definition to transformation to consumption.
+
+Each node in the datatype diagram represents a data class or type definition (`c-class-8` / Maroon). Connections show how data flows between components:
+
+| Connection Color | Meaning |
+|-----------------|---------|
+| Blue (`#89b4fa`) | Data passed as input / output between functions |
+| Green (`#a6e3a1`) | Data constructed or returned by a function |
+| Peach (`#fab387`) | Data consumed by an external dependency |
+
+A typical datatype flow looks like:
+
+```
+[RawInput] ──construct──▶ [ParsedData] ──transform──▶ [ModelInput] ──consume──▶ [ExternalAPI]
+```
+
+To include a datatype diagram in your `code_graph_data.js`:
+
+```js
+DIAGRAMS.datatypes = {
+  title: 'Data Type Flow',
+  sub: 'How data structures move through the system',
+  navLabel: 'DataTypes',
+  navSub: 'data flow',
+  NODES: [
+    {
+      id: 'UserInput', label: 'UserInput', type: 'class',
+      cls: 'c-class-8', x: 30, y: 60, w: 240,
+      sections: [{ title: 'Fields', attrs: [
+        { id: 'UserInput.query', name: 'query: str' },
+        { id: 'UserInput.lang',  name: 'lang: str' },
+      ]}]
+    },
+    {
+      id: 'ParsedRequest', label: 'ParsedRequest', type: 'class',
+      cls: 'c-class-8', x: 340, y: 60, w: 260,
+      sections: [{ title: 'Fields', attrs: [
+        { id: 'ParsedRequest.tokens', name: 'tokens: List[str]' },
+        { id: 'ParsedRequest.intent', name: 'intent: str' },
+      ]}]
+    },
+  ],
+  CONNECTIONS: [
+    ['UserInput.query', 'ParsedRequest.tokens', '#89b4fa', false],
   ],
 };
 ```
