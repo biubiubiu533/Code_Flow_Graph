@@ -46,7 +46,9 @@ This step is **MANDATORY** for all projects. You must complete both phases befor
    - Project type (library / CLI / web service / desktop app / etc.)
    - Major modules/packages and their purposes
    - Whether a UI layer exists
-4. **Present the overview to the user** and explicitly ask which part(s) to analyze:
+4. **Present the overview to the user** and ask TWO questions:
+   - Which part(s) to analyze
+   - What language to use for diagram labels/descriptions (default: **Chinese**)
 
    > "Based on the project structure, here is an overview:
    >
@@ -59,9 +61,11 @@ This step is **MANDATORY** for all projects. You must complete both phases befor
    > 3. `cli/` — command-line entry points
    > 4. ...
    >
-   > Which part(s) would you like to visualize? (You can pick one or more, or say 'all')"
+   > Which part(s) would you like to visualize? (You can pick one or more, or say 'all')
+   >
+   > What language should I use for diagram labels, descriptions, and tooltips? (default: **中文**)"
 
-5. **STOP and wait for the user's response.** Do NOT proceed until the user confirms the scope.
+5. **STOP and wait for the user's response.** Do NOT proceed until the user confirms the scope. Use the user's chosen language for all `desc`, `sig` hint text, `io` labels, section titles, and `navSub` in the generated data. If the user doesn't specify, default to **Chinese (中文)**.
 
 #### Phase B: Identify Main Entry Points & Confirm with User
 
@@ -98,8 +102,13 @@ Only after the user confirms the entry points in Step 0, begin detailed code ana
 
 Identify the following elements:
 
-- **Modules/packages** → become GROUPS (folder-level containers)
-- **Classes/major functions** → become NODES
+- **Folders/packages** → become GROUPS (dashed border containers with label — always represent directory/package scope, NEVER used for individual modules or arbitrary grouping)
+- **Modules** → become NODES (type: `module`) — a single `.py`/`.ts`/`.rs` file
+- **Classes** → become NODES (type: `class`)
+- **Function groups** → become NODES (type: `function`)
+- **Entry points** → become NODES (type: `entry`)
+- **External deps** → become NODES (type: `external`)
+- **Data types** → become NODES (type: `data`)
 - **Methods** → become attributes (attrs) within node sections
 - **Function calls between classes** → become CONNECTIONS
 
@@ -125,7 +134,7 @@ Copy `assets/code_flow_graph.html` to the output folder. Do not modify it.
 1. **Search** — Ctrl+K opens search box; fuzzy-matches function names across ALL diagrams; click to jump cross-diagram
 2. **Collapsed Children Redirect** — When children are collapsed, connections redirect to the parent attr instead of disappearing
 3. **Click Blank to Deselect** — Click any blank area in the viewport to clear all highlights and close the detail panel
-4. **Enhanced Legend** — Node types (class/function/singleton) AND connection color semantics (call/data/extern/signal)
+4. **Enhanced Legend** — Node types (class/module/function/entry/singleton/external) with distinct border shapes AND connection color semantics (call/data/extern/signal) with directional arrows
 5. **Signature Tooltips** — Hover any function attr to see full signature; callChain attrs show "Click to view call chain →" hint
 6. **Call Chain Detail Panel** — Click attrs with `callChain` to open right-side interactive call tree; each item shows a `desc` (description) explaining what the function does; clicking any item with a matching graph node highlights that node and pans the viewport to it
 7. **Position Persistence** — Node positions saved to localStorage per diagram; "Reset Layout" restores defaults
@@ -140,6 +149,7 @@ Key principles:
 - **Unified colors across pages** — The same module/concept MUST use the same `cls` color class in ALL diagrams
 - **Simplify** — Focus on core business logic; skip trivial getters/setters/logging; collapse internal helpers into parent's `children`
 - **Call chains** — Add `callChain` to key entry-point functions to enable the detail panel; include `desc` for every item explaining what the function does
+- **Call chain `id` MUST exactly match graph attr `id`** — Each item in `callChain` has an `id` field. This `id` is used by the viewer to locate and highlight the corresponding attr in the graph when clicked. If the `id` doesn't match any attr's `id` in the current diagram, the highlight will fail silently. Always ensure `callChain[].id` uses the exact same string as the target `attrs[].id` (format: `NodeId.method_name`)
 - **Signatures** — Add `sig` field with HTML tooltip for every non-trivial function attr
 
 #### Diagram Organization Strategy
@@ -182,15 +192,21 @@ For non-UI projects, **skip all UI-related diagrams and analysis**. The sidebar 
 
 | Code Concept | Graph Element |
 |---|---|
-| Entry function | NODE (type: `entry`) — root of the diagram |
+| Entry function | NODE (type: `entry`) — thick rounded border + glow, root of the diagram |
+| Class / core object | NODE (type: `class`) — double border, square corners |
+| Module / package | NODE (type: `module`) — left accent bar, italic header |
+| Function group / utility | NODE (type: `function`) — rounded thin border |
+| Singleton instance | NODE (type: `singleton`) — dashed border |
 | Pipeline step / major called function | NODE with attrs for its sub-calls |
 | Small helper called once | attr with `children` inside parent node |
-| Cross-module dependency | NODE (type: `external`) in separate group |
+| Cross-module dependency | NODE (type: `external`) — dotted border, asymmetric corners, dimmed |
+| Data type / dataclass | NODE (type: `data`) — thick top accent |
+| UI widget / dialog | NODE (type: `widget`) — thick top accent |
 | Public method | attr with `visibility: 'public'` |
 | Private method (`_` prefix) | attr with `visibility: 'private'` |
 | Descriptive note | attr without visibility |
-| Direct function call A→B | CONNECTION (solid) |
-| Signal / event / callback | CONNECTION (dashed) |
+| Direct function call A→B | CONNECTION (solid, arrow toward callee) |
+| Signal / event / callback | CONNECTION (dashed, arrow toward target) |
 
 ##### Specialized Diagram Types
 
@@ -201,7 +217,7 @@ For non-UI projects, **skip all UI-related diagrams and analysis**. The sidebar 
 
 **Data Type Diagrams** — For projects with dataclasses/NamedTuples/TypedDicts:
 1. Create a dedicated "Data Types" diagram entry
-2. Each dataclass → node with type `class`, cls `c-class-8` (maroon)
+2. Each dataclass → node with type `data`, cls `c-class-8` (maroon)
 3. List fields as attrs with type in the `val` field
 4. Add a "Data Flow" node showing creation/consumption pipeline
 

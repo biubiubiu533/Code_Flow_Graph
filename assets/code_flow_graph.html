@@ -40,6 +40,7 @@ svg#svg{position:absolute;top:0;left:0;pointer-events:none;z-index:1;overflow:vi
 svg#svg path{fill:none;stroke-width:1.6;opacity:.45;transition:opacity .2s,stroke-width .2s}
 svg#svg path.hl{opacity:1;stroke-width:3}
 svg#svg path.dim{opacity:.06}
+svg#svg marker polygon{transition:opacity .2s}
 /* Call chain detail panel */
 #detail-panel{width:0;min-width:0;background:#181825;border-left:1px solid #313244;overflow-y:auto;transition:width .25s ease,min-width .25s ease;z-index:150;display:flex;flex-direction:column}
 #detail-panel.open{width:360px;min-width:360px}
@@ -70,26 +71,38 @@ svg#svg path.dim{opacity:.06}
 .node{position:absolute;border-radius:8px;border:2px solid;z-index:2;box-shadow:0 3px 12px rgba(0,0,0,.4);transition:opacity .2s;min-width:50px}
 .node.dim{opacity:.18}
 .node.dragging{z-index:10;box-shadow:0 8px 30px rgba(0,0,0,.6)}
-/* Class node: double border effect */
-.node.node-class{border-width:2px;border-style:double}
-.node.node-class .node-header{letter-spacing:.3px}
-/* Function/module node: single solid border, rounded differently */
-.node.node-function{border-width:1.5px;border-style:solid;border-radius:12px}
-.node.node-function .node-header{border-radius:10px 10px 0 0}
-/* Singleton node: dashed border */
-.node.node-singleton{border-width:2px;border-style:dashed}
-/* External node: dotted border, lower opacity */
-.node.node-external{border-width:1.5px;border-style:dotted;opacity:.85}
-/* UI/widget node */
-.node.node-widget{border-width:2px}
+/* ── Class node: double border, square corners ── */
+.node.node-class{border-width:3px;border-style:double;border-radius:4px}
+.node.node-class .node-header{letter-spacing:.3px;border-radius:2px 2px 0 0}
+/* ── Module node: solid border + left accent bar ── */
+.node.node-module{border-width:1.5px;border-style:solid;border-radius:6px;border-left-width:5px}
+.node.node-module .node-header{border-radius:4px 4px 0 0;font-style:italic}
+/* ── Function node: rounded, thin solid ── */
+.node.node-function{border-width:1.5px;border-style:solid;border-radius:14px}
+.node.node-function .node-header{border-radius:12px 12px 0 0}
+/* ── Entry node: rounded + thick border + glow ── */
+.node.node-entry{border-width:2.5px;border-style:solid;border-radius:14px;box-shadow:0 3px 12px rgba(0,0,0,.4),0 0 12px rgba(249,226,175,.15)}
+.node.node-entry .node-header{border-radius:11px 11px 0 0;font-weight:900}
+/* ── Singleton node: dashed border ── */
+.node.node-singleton{border-width:2px;border-style:dashed;border-radius:8px}
+/* ── External node: dotted border, dimmed, clipped corner ── */
+.node.node-external{border-width:1.5px;border-style:dotted;border-radius:4px 12px 4px 12px;opacity:.78}
+.node.node-external .node-header{border-radius:2px 10px 0 0}
+/* ── Data node: double border, maroon accent ── */
+.node.node-data{border-width:2px;border-style:solid;border-radius:6px;border-top-width:4px}
+.node.node-data .node-header{border-radius:4px 4px 0 0}
+/* ── UI/widget node: top color bar accent ── */
+.node.node-widget{border-width:2px;border-radius:8px;border-top-width:4px}
 .node-header{padding:5px 10px;font-weight:bold;font-size:12px;border-radius:6px 6px 0 0;border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap;cursor:move;user-select:none;display:flex;align-items:center;gap:6px}
-.node-badge{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;opacity:.85}
-.node-badge-class{background:rgba(0,0,0,.25);color:#f9e2af}
-.node-badge-func{background:rgba(0,0,0,.25);color:#a6e3a1}
-.node-badge-module{background:rgba(0,0,0,.25);color:#89b4fa}
-.node-badge-singleton{background:rgba(0,0,0,.25);color:#cba6f7}
-.node-badge-ui{background:rgba(0,0,0,.25);color:#f5c2e7}
-.node-badge-ext{background:rgba(0,0,0,.25);color:#6c7086}
+.node-badge{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;opacity:.9}
+.node-badge-class{background:rgba(0,0,0,.3);color:#f9e2af;border:1px solid rgba(249,226,175,.3)}
+.node-badge-func{background:rgba(0,0,0,.3);color:#a6e3a1;border:1px solid rgba(166,227,161,.3)}
+.node-badge-entry{background:rgba(249,226,175,.2);color:#f9e2af;border:1px solid rgba(249,226,175,.5);font-weight:900;letter-spacing:.5px}
+.node-badge-module{background:rgba(0,0,0,.3);color:#89b4fa;border:1px solid rgba(137,180,250,.3)}
+.node-badge-singleton{background:rgba(0,0,0,.3);color:#cba6f7;border:1px solid rgba(203,166,247,.3)}
+.node-badge-data{background:rgba(0,0,0,.3);color:#eba0ac;border:1px solid rgba(235,160,172,.3)}
+.node-badge-ui{background:rgba(0,0,0,.3);color:#f5c2e7;border:1px solid rgba(245,194,231,.3)}
+.node-badge-ext{background:rgba(0,0,0,.3);color:#6c7086;border:1px solid rgba(108,112,134,.3)}
 .node-type{font-size:9px;font-weight:normal;opacity:.65;margin-left:4px}
 .node-body{padding:3px 0}
 .attr{padding:1px 8px;font-size:10.5px;font-family:'Consolas','Courier New',monospace;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .12s;user-select:none;min-height:18px}
@@ -193,10 +206,13 @@ svg#svg path.dim{opacity:.06}
     <div class="legend" id="legendContainer">
       <div class="legend-item"><div class="legend-color" style="background:#a6e3a1"></div>public</div>
       <div class="legend-item"><div class="legend-color" style="background:transparent;border:2px solid #f38ba8"></div>private</div>
-      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1.5px double #cdd6f4;border-radius:3px;padding:0 3px;margin-right:2px">C</span>class</div>
-      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1px solid #cdd6f4;border-radius:6px;padding:0 3px;margin-right:2px">ƒ</span>function</div>
+      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:3px double #cdd6f4;border-radius:2px;padding:0 3px;margin-right:2px">C</span>class</div>
+      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1.5px solid #cdd6f4;border-left:4px solid #cdd6f4;border-radius:4px;padding:0 3px;margin-right:2px;font-style:italic">M</span>module</div>
+      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1px solid #cdd6f4;border-radius:10px;padding:0 3px;margin-right:2px">ƒ</span>function</div>
+      <div class="legend-item"><span style="font-size:9px;color:#f9e2af;border:2.5px solid #f9e2af;border-radius:10px;padding:0 3px;margin-right:2px;font-weight:900">E</span>entry</div>
       <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1.5px dashed #cdd6f4;border-radius:3px;padding:0 3px;margin-right:2px">S</span>singleton</div>
-      <div class="legend-item" style="color:#6c7086">━ call ┅ signal/event</div>
+      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1.5px dotted #6c7086;border-radius:2px 8px 2px 8px;padding:0 3px;margin-right:2px;opacity:.7">⊞</span>external</div>
+      <div class="legend-item" style="color:#6c7086">━▶ call ┅▶ signal/event</div>
       <div class="legend-item"><div class="legend-color" style="background:#a6e3a1"></div><span style="font-size:9px">call</span></div>
       <div class="legend-item"><div class="legend-color" style="background:#89b4fa"></div><span style="font-size:9px">data</span></div>
       <div class="legend-item"><div class="legend-color" style="background:#fab387"></div><span style="font-size:9px">extern</span></div>
@@ -257,11 +273,12 @@ var attrFieldDetailMap = {}; // aid -> fieldDetail object (for data type fields)
 var NODE_TYPE_MAP = {
   'class': 'node-class',
   'singleton': 'node-singleton',
-  'module': 'node-function',
+  'module': 'node-module',
   'function': 'node-function',
   'functions': 'node-function',
-  'entry': 'node-function',
+  'entry': 'node-entry',
   'external': 'node-external',
+  'data': 'node-data',
   'QDialog': 'node-widget',
   'widget': 'node-widget',
   'slots': 'node-widget'
@@ -273,8 +290,9 @@ var NODE_BADGE_MAP = {
   'module': '<span class="node-badge node-badge-module">MODULE</span>',
   'function': '<span class="node-badge node-badge-func">FUNC</span>',
   'functions': '<span class="node-badge node-badge-func">FUNC</span>',
-  'entry': '<span class="node-badge node-badge-func">ENTRY</span>',
+  'entry': '<span class="node-badge node-badge-entry">ENTRY</span>',
   'external': '<span class="node-badge node-badge-ext">EXT</span>',
+  'data': '<span class="node-badge node-badge-data">DATA</span>',
   'QDialog': '<span class="node-badge node-badge-ui">UI</span>',
   'widget': '<span class="node-badge node-badge-ui">WIDGET</span>',
   'slots': '<span class="node-badge node-badge-ui">SLOTS</span>'
@@ -492,6 +510,46 @@ function getAttrAnchor(aid, side) {
 
 function redrawConnections() {
   svg.innerHTML = ''; connData = [];
+  // Create a <defs> for arrow markers, keyed by color
+  var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  svg.appendChild(defs);
+  var markerCache = {};
+  function getMarker(color) {
+    if (markerCache[color]) return markerCache[color];
+    var safeId = 'arrow-' + color.replace('#', '');
+    var marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    marker.setAttribute('id', safeId);
+    marker.setAttribute('viewBox', '0 0 10 10');
+    marker.setAttribute('refX', '5');
+    marker.setAttribute('refY', '5');
+    marker.setAttribute('markerWidth', '10');
+    marker.setAttribute('markerHeight', '10');
+    marker.setAttribute('orient', 'auto');
+    var poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('points', '0,1 10,5 0,9');
+    poly.setAttribute('fill', color);
+    marker.appendChild(poly);
+    defs.appendChild(marker);
+    markerCache[color] = 'url(#' + safeId + ')';
+    return markerCache[color];
+  }
+  // De Casteljau split of cubic bezier at t=0.5
+  // Given P0,P1,P2,P3, returns {first:[P0,A,B,M], second:[M,C,D,P3]}
+  function splitCubicAt05(x0,y0, x1,y1, x2,y2, x3,y3) {
+    // Level 1
+    var a1x=(x0+x1)/2, a1y=(y0+y1)/2;
+    var a2x=(x1+x2)/2, a2y=(y1+y2)/2;
+    var a3x=(x2+x3)/2, a3y=(y2+y3)/2;
+    // Level 2
+    var b1x=(a1x+a2x)/2, b1y=(a1y+a2y)/2;
+    var b2x=(a2x+a3x)/2, b2y=(a2y+a3y)/2;
+    // Midpoint
+    var mx=(b1x+b2x)/2, my=(b1y+b2y)/2;
+    return {
+      first:  {cp1x:a1x, cp1y:a1y, cp2x:b1x, cp2y:b1y, mx:mx, my:my},
+      second: {cp1x:b2x, cp1y:b2y, cp2x:a3x, cp2y:a3y}
+    };
+  }
   CONNECTIONS.forEach(function(c, idx) {
     var srcId = c[0], tgtId = c[1], color = c[2], dashed = c[3];
     var srcEl = attrElements[srcId], tgtEl = attrElements[tgtId];
@@ -509,10 +567,17 @@ function redrawConnections() {
     var dx = Math.abs(p2.x - p1.x), cpOff = Math.max(dx * 0.35, 50);
     var cp1x = srcSide === 'right' ? p1.x + cpOff : p1.x - cpOff;
     var cp2x = tgtSide === 'left' ? p2.x - cpOff : p2.x + cpOff;
-    var d = 'M ' + p1.x + ' ' + p1.y + ' C ' + cp1x + ' ' + p1.y + ', ' + cp2x + ' ' + p2.y + ', ' + p2.x + ' ' + p2.y;
+    // Split the cubic bezier at midpoint for marker-mid arrow
+    var s = splitCubicAt05(p1.x, p1.y, cp1x, p1.y, cp2x, p2.y, p2.x, p2.y);
+    // Path: first half C → midpoint, L midpoint (triggers marker-mid), second half C → end
+    var d = 'M ' + p1.x + ' ' + p1.y +
+            ' C ' + s.first.cp1x + ' ' + s.first.cp1y + ', ' + s.first.cp2x + ' ' + s.first.cp2y + ', ' + s.first.mx + ' ' + s.first.my +
+            ' L ' + s.first.mx + ' ' + s.first.my +
+            ' C ' + s.second.cp1x + ' ' + s.second.cp1y + ', ' + s.second.cp2x + ' ' + s.second.cp2y + ', ' + p2.x + ' ' + p2.y;
     var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', d); path.setAttribute('stroke', color);
     if (dashed) path.setAttribute('stroke-dasharray', '6 4');
+    path.setAttribute('marker-mid', getMarker(color));
     svg.appendChild(path);
     connData.push({srcId: srcId, tgtId: tgtId, path: path, idx: idx});
   });
@@ -629,49 +694,9 @@ function renderCallTree(container, items, currentAid) {
     // Click to highlight corresponding node in graph AND navigate
     row.addEventListener('click', function(e) {
       if (e.target.closest('.ct-toggle')) return;
-      // Clear previous active state in call tree
       dpBody.querySelectorAll('.ct-node.ct-active').forEach(function(el) { el.classList.remove('ct-active'); });
       row.classList.add('ct-active');
-      var targetAid = item.id;
-      var funcName = item.name || '';
-      // Collect all attrs to highlight: the clicked attr + all attrs in its detail node
-      var allAids = [targetAid];
-      var nodeAttrs = findNodeAttrsByFuncName(funcName);
-      if (nodeAttrs.length > 0) allAids = allAids.concat(nodeAttrs);
-      // Find the first attr that exists for scrolling
-      var scrollTarget = targetAid;
-      if (nodeAttrs.length > 0 && attrElements[nodeAttrs[0]]) scrollTarget = nodeAttrs[0];
-
-      if (attrElements[targetAid] || nodeAttrs.length > 0) {
-        clearHighlight();
-        selectedAttr = allAids;
-        reHighlight();
-        scrollToAttr(scrollTarget);
-        flashAttr(scrollTarget);
-      } else {
-        // Try to find in other diagrams
-        var found = findAttrInDiagrams(targetAid);
-        if (found) {
-          var savedChain = dpBody.innerHTML;
-          var savedTitle = dpTitle.textContent;
-          switchDiagram(found.diagram);
-          setTimeout(function() {
-            var nodeAttrs2 = findNodeAttrsByFuncName(funcName);
-            var allAids2 = [targetAid].concat(nodeAttrs2);
-            var scrollTarget2 = nodeAttrs2.length > 0 && attrElements[nodeAttrs2[0]] ? nodeAttrs2[0] : targetAid;
-            clearHighlight();
-            selectedAttr = allAids2;
-            reHighlight();
-            scrollToAttr(scrollTarget2);
-            flashAttr(scrollTarget2);
-            // Reopen detail panel with saved content
-            dpTitle.textContent = savedTitle;
-            dpBody.innerHTML = savedChain;
-            detailPanel.classList.add('open');
-            rebindCallTreeEvents(dpBody);
-          }, 150);
-        }
-      }
+      highlightCallTreeItem(item.id, item.name || '', dpBody);
     });
 
     nodeDiv.appendChild(row);
@@ -823,38 +848,7 @@ function rebindCallTreeEvents(container) {
       if (e.target.closest('.ct-toggle')) return;
       container.querySelectorAll('.ct-node.ct-active').forEach(function(el) { el.classList.remove('ct-active'); });
       row.classList.add('ct-active');
-      var nodeAttrs = findNodeAttrsByFuncName(funcName);
-      var allAids = [aid].concat(nodeAttrs);
-      var scrollTarget = nodeAttrs.length > 0 && attrElements[nodeAttrs[0]] ? nodeAttrs[0] : aid;
-
-      if (attrElements[aid] || nodeAttrs.length > 0) {
-        clearHighlight();
-        selectedAttr = allAids;
-        reHighlight();
-        scrollToAttr(scrollTarget);
-        flashAttr(scrollTarget);
-      } else {
-        var found = findAttrInDiagrams(aid);
-        if (found) {
-          var savedChain = container.innerHTML;
-          var savedTitle = dpTitle.textContent;
-          switchDiagram(found.diagram);
-          setTimeout(function() {
-            var nodeAttrs2 = findNodeAttrsByFuncName(funcName);
-            var allAids2 = [aid].concat(nodeAttrs2);
-            var scrollTarget2 = nodeAttrs2.length > 0 && attrElements[nodeAttrs2[0]] ? nodeAttrs2[0] : aid;
-            clearHighlight();
-            selectedAttr = allAids2;
-            reHighlight();
-            scrollToAttr(scrollTarget2);
-            flashAttr(scrollTarget2);
-            dpTitle.textContent = savedTitle;
-            dpBody.innerHTML = savedChain;
-            detailPanel.classList.add('open');
-            rebindCallTreeEvents(dpBody);
-          }, 150);
-        }
-      }
+      highlightCallTreeItem(aid, funcName, container);
     });
   });
   // Rebind toggle events
@@ -995,17 +989,73 @@ function reHighlight() {
   });
 }
 
-// Find the detail node whose label matches a function name, return all attr IDs in that node.
-// Also find individual attrs whose name matches the function name.
+// Shared logic: highlight a call tree item by id and name, with cross-diagram support
+function highlightCallTreeItem(targetAid, funcName, panelBody) {
+  // Priority 1: exact match by attr id in current diagram
+  if (targetAid && attrElements[targetAid]) {
+    clearHighlight();
+    selectedAttr = targetAid;
+    reHighlight();
+    scrollToAttr(targetAid);
+    flashAttr(targetAid);
+    return;
+  }
+  // Priority 2: fallback to name-based matching in current diagram
+  var nameMatches = findNodeAttrsByFuncName(funcName);
+  if (nameMatches.length > 0) {
+    var allAids = targetAid ? [targetAid] : [];
+    allAids = allAids.concat(nameMatches);
+    var scrollTarget = attrElements[nameMatches[0]] ? nameMatches[0] : (targetAid || nameMatches[0]);
+    clearHighlight();
+    selectedAttr = allAids;
+    reHighlight();
+    scrollToAttr(scrollTarget);
+    flashAttr(scrollTarget);
+    return;
+  }
+  // Priority 3: cross-diagram navigation by exact id
+  if (targetAid) {
+    var found = findAttrInDiagrams(targetAid);
+    if (found) {
+      var savedChain = panelBody.innerHTML;
+      var savedTitle = dpTitle.textContent;
+      switchDiagram(found.diagram);
+      setTimeout(function() {
+        if (attrElements[targetAid]) {
+          clearHighlight();
+          selectedAttr = targetAid;
+          reHighlight();
+          scrollToAttr(targetAid);
+          flashAttr(targetAid);
+        } else {
+          var nm = findNodeAttrsByFuncName(funcName);
+          if (nm.length > 0) {
+            clearHighlight();
+            selectedAttr = [targetAid].concat(nm);
+            reHighlight();
+            scrollToAttr(nm[0]);
+            flashAttr(nm[0]);
+          }
+        }
+        dpTitle.textContent = savedTitle;
+        panelBody.innerHTML = savedChain;
+        detailPanel.classList.add('open');
+        rebindCallTreeEvents(panelBody);
+      }, 150);
+    }
+  }
+}
+
+// Find attrs by function name — STRICT equality only (no substring matching)
 function findNodeAttrsByFuncName(funcName) {
   var cleanName = funcName.replace(/^→\s*/, '').replace(/^[\w.]+\./, '').replace(/\(\)$/, '').trim();
   if (!cleanName) return [];
   var result = [];
   var matchedNodeIds = new Set();
-  // First pass: match node labels → include all attrs from that node
+  // First pass: match node labels with strict equality
   NODES.forEach(function(n) {
     var nodeLabel = (n.label || '').replace(/\(\)$/, '').trim();
-    if (nodeLabel === cleanName || nodeLabel.indexOf(cleanName) !== -1) {
+    if (nodeLabel === cleanName) {
       matchedNodeIds.add(n.id);
       (n.sections || []).forEach(function(sec) {
         (sec.attrs || []).forEach(function(a) {
@@ -1015,7 +1065,7 @@ function findNodeAttrsByFuncName(funcName) {
       });
     }
   });
-  // Second pass: match individual attr names (for sub-functions inside nodes)
+  // Second pass: match individual attr names with strict equality
   NODES.forEach(function(n) {
     if (matchedNodeIds.has(n.id)) return;
     (n.sections || []).forEach(function(sec) {

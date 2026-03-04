@@ -65,7 +65,9 @@ Each node represents a **class**, **module**, **function group**, or **UI compon
           childrenCollapsed: true,    // optional: default collapsed state (true by default)
           callChain: [                // optional: complete call chain data for detail panel
             {
-              id: 'cls.method_name',  // attr id (if exists in graph) for click-to-highlight navigation
+              id: 'cls.method_name',  // MUST exactly match the target attr's id in the graph (format: NodeId.method_name)
+                                      // The viewer uses this id to highlight the corresponding node/attr when clicked.
+                                      // If this id doesn't match any attr in the current diagram, click-to-highlight won't work.
               name: 'method_name()',  // display name
               module: 'module.py',    // source module (optional)
               desc: 'One-line description of what the function does',  // description text shown below function name
@@ -105,15 +107,18 @@ Colors use Catppuccin Mocha palette. **IMPORTANT**: These color assignments MUST
 
 ### Node Type Visual Styles
 
-| type value | Border Style | Badge |
-|-----------|-------------|-------|
-| class | double border | CLASS |
-| singleton | dashed border | SINGLETON |
-| module | solid rounded border | MODULE |
-| function/functions | solid rounded border | FUNC |
-| entry | solid rounded border | ENTRY |
-| external | dotted border, slightly transparent | EXT |
-| QDialog/widget/slots | standard border | UI / WIDGET / SLOTS |
+Each node type has a **distinct visual identity** to be easily distinguishable at a glance. These styles are consistent across all diagram pages.
+
+| type value | Border Style | Shape | Badge |
+|-----------|-------------|-------|-------|
+| class | 3px double border | square corners (4px radius) | CLASS |
+| module | solid + 5px left accent bar | 6px radius, italic header | MODULE |
+| function/functions | 1.5px thin solid | large radius (14px), pill-like | FUNC |
+| entry | 2.5px thick solid + subtle glow | large radius (14px), extra bold header | ENTRY |
+| singleton | 2px dashed border | 8px radius | SINGLETON |
+| external | 1.5px dotted, dimmed (78%) | asymmetric corners (4/12/4/12px) | EXT |
+| data | solid + 4px thick top accent | 6px radius | DATA |
+| QDialog/widget/slots | solid + 4px thick top accent | 8px radius | UI / WIDGET / SLOTS |
 
 ### Attribute Visibility Styles
 
@@ -137,6 +142,8 @@ Each connection is a 4-element or 5-element array:
 - `label` (optional): text shown at the midpoint of the connection
 
 ### Connection Color Conventions
+
+All connections render with a **solid triangle arrowhead at the midpoint of the curve**, indicating flow direction (caller → callee, emitter → handler). The arrow is placed at the center of the bezier curve using de Casteljau subdivision, not at the endpoint.
 
 - `#a6e3a1` (green) — direct function call
 - `#f38ba8` (red) — inheritance / override
