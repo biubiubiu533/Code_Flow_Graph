@@ -1,8 +1,8 @@
-# Code Graph Data Format Reference
+# Code Flow Graph Data Format Reference
 
 ## Overview
 
-The data file `code_graph_data.js` defines a global `var DIAGRAMS = {};` object. Each key in `DIAGRAMS` is a diagram identifier (sidebar entry). A special `_projectTitle` key can set the sidebar header.
+The data file `code_flow_graph_data.js` defines a global `var DIAGRAMS = {};` object. Each key in `DIAGRAMS` is a diagram identifier (sidebar entry). A special `_projectTitle` key can set the sidebar header.
 
 ## Top-level Structure
 

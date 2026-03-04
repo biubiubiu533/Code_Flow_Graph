@@ -1,6 +1,6 @@
-# Code Graph Viewer
+# Code Flow Graph
 
-An interactive HTML node-graph viewer skill that visualizes codebase structure, class relationships, and function call chains.
+An interactive HTML node-graph viewer skill that visualizes codebase structure, entry-point call chains, and data type flows.
 
 ![Catppuccin Mocha Theme](https://img.shields.io/badge/theme-Catppuccin%20Mocha-b4befe?style=flat-square) ![Standalone HTML](https://img.shields.io/badge/output-standalone%20HTML-a6e3a1?style=flat-square) ![No Dependencies](https://img.shields.io/badge/dependencies-none-89b4fa?style=flat-square)
 
@@ -22,8 +22,8 @@ The viewer renders two files together:
 
 | File | Purpose |
 |------|---------|
-| `code_graph_viewer.html` | Rendering engine (do not modify) |
-| `code_graph_data.js` | Diagram data (generated per-project by your AI assistant) |
+| `code_flow_graph.html` | Rendering engine (do not modify) |
+| `code_flow_graph_data.js` | Diagram data (generated per-project by your AI assistant) |
 
 Simply place both files in the same directory and open the HTML in a browser.
 
@@ -34,10 +34,10 @@ Simply place both files in the same directory and open the HTML in a browser.
 Copy the entire repository into your AI agent's skills directory:
 
 ```
-<project>/.skills/code-graph-viewer/
+<project>/.skills/code_flow_graph/
   SKILL.md
   assets/
-    code_graph_viewer.html
+    code_flow_graph.html
   references/
     data_format.md
 ```
@@ -48,55 +48,13 @@ Then ask your AI: *"Visualize the code architecture of this project"* or *"Gener
 
 You can also use the viewer independently:
 
-1. Copy `assets/code_graph_viewer.html` to your project
-2. Create a `code_graph_data.js` file following the format in `references/data_format.md`
+1. Copy `assets/code_flow_graph.html` to your project
+2. Create a `code_flow_graph_data.js` file following the format in `references/data_format.md`
 3. Open the HTML file in a browser
 
 ## Data Format
 
 See [`references/data_format.md`](references/data_format.md) for the complete data format specification.
-
-### Quick Example
-
-```js
-var DIAGRAMS = {};
-DIAGRAMS._projectTitle = 'MyApp';
-
-DIAGRAMS.core = {
-  title: 'Core Module',
-  sub: 'src/core/ — business logic',
-  navLabel: 'Core',
-  navSub: 'src/core/',
-  NODES: [
-    {
-      id: 'Engine', label: 'Engine', type: 'class',
-      cls: 'c-class-1', x: 30, y: 60, w: 280,
-      sections: [{
-        title: 'Public', attrs: [
-          { id: 'Engine.start', name: 'start()', visibility: 'public' },
-          { id: 'Engine.stop', name: 'stop()', visibility: 'public' },
-        ]
-      }]
-    },
-    {
-      id: 'Logger', label: 'Logger', type: 'class',
-      cls: 'c-class-6', x: 400, y: 60, w: 240,
-      sections: [{
-        title: 'Methods', attrs: [
-          { id: 'Logger.log', name: 'log(msg)', visibility: 'public' },
-        ]
-      }]
-    },
-  ],
-  CONNECTIONS: [
-    ['Engine.start', 'Logger.log', '#a6e3a1', false],
-  ],
-  GROUPS: [
-    { id: 'grp-core', label: 'core/', nodes: ['Engine', 'Logger'],
-      color: '#89b4fa', bg: 'rgba(137,180,250,0.04)' },
-  ],
-};
-```
 
 ## Data Type Flow (Datatype Diagram)
 
@@ -116,7 +74,7 @@ A typical datatype flow looks like:
 [RawInput] ──construct──▶ [ParsedData] ──transform──▶ [ModelInput] ──consume──▶ [ExternalAPI]
 ```
 
-To include a datatype diagram in your `code_graph_data.js`:
+To include a datatype diagram in your `code_flow_graph_data.js`:
 
 ```js
 DIAGRAMS.datatypes = {
@@ -152,21 +110,21 @@ DIAGRAMS.datatypes = {
 
 Uses [Catppuccin Mocha](https://github.com/catppuccin/catppuccin) palette with semantic meaning:
 
-| Class | Color | Usage |
-|-------|-------|-------|
-| `c-class-1` | 🟡 Yellow | Entry point / orchestrator |
-| `c-class-2` | 🟢 Green | Core logic |
-| `c-class-3` | 🔴 Red | Shape matching / builder |
-| `c-class-4` | 🟣 Mauve | Compatibility mode |
-| `c-class-5` | 🩵 Teal | Multi-mesh mode |
-| `c-class-6` | 🔵 Blue | Shared services |
-| `c-class-7` | 💎 Sapphire | External dependencies |
-| `c-class-8` | 🟤 Maroon | Data types |
-| `c-class-9` | 💜 Lavender | Utilities |
-| `c-class-10` | 🩷 Pink | Signals / events |
-| `c-class-11` | ☁️ Sky | Extensions |
-| `c-class-12` | 🟠 Peach | Helpers |
-| `c-ui` | 🌸 Flamingo | UI components |
+| Class | Color | Recommended Usage |
+|-------|-------|-------------------|
+| `c-class-1` | 🟡 Yellow | Entry points, main orchestrators, pipeline roots |
+| `c-class-2` | 🟢 Green | Core business logic, primary processing modules |
+| `c-class-3` | 🔴 Red | Pattern matching, builders, constructors |
+| `c-class-4` | 🟣 Mauve | Adapters, wrappers, compatibility layers |
+| `c-class-5` | 🩵 Teal | Specialized processing modes, parallel paths |
+| `c-class-6` | 🔵 Blue | Shared services, caches, registries |
+| `c-class-7` | 💎 Sapphire | External / third-party dependencies |
+| `c-class-8` | 🟤 Maroon | Data types, dataclasses, schemas |
+| `c-class-9` | 💜 Lavender | Utilities, common helpers |
+| `c-class-10` | 🩷 Pink | Signals, events, callbacks |
+| `c-class-11` | ☁️ Sky | Extensions, plugins, optional modules |
+| `c-class-12` | 🟠 Peach | Internal helpers, minor utilities |
+| `c-ui` | 🌸 Flamingo | UI components, widgets, views |
 
 ## Connection Types
 

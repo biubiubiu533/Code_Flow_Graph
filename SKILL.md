@@ -1,5 +1,5 @@
 ---
-name: code-graph-viewer
+name: code_flow_graph
 description: >
   This skill generates interactive HTML node-graph diagrams to visualize codebase
   structure, class relationships, and function call chains. It should be used when
@@ -10,7 +10,7 @@ description: >
   position persistence, and Catppuccin Mocha dark theme.
 ---
 
-# Code Graph Viewer
+# Code Flow Graph
 
 Generate interactive node-graph HTML diagrams that visualize code structure and call relationships.
 
@@ -18,31 +18,99 @@ Generate interactive node-graph HTML diagrams that visualize code structure and 
 
 - User requests code structure visualization, architecture diagrams, or call-chain mapping
 - User wants to understand how classes/modules/functions relate to each other
-- User wants to see UI event flows (button click → handler → business logic)
+- User wants to see UI event flows (button click → handler → business logic) — UI projects only
 - User asks to "diagram", "visualize", "map out", or "graph" the code
 
 ## Architecture
 
 The output consists of two files placed in a dedicated folder:
 
-1. **`code_graph_viewer.html`** — rendering engine (copy from `assets/code_graph_viewer.html`)
-2. **`code_graph_data.js`** — diagram data (generated per-project)
+1. **`code_flow_graph.html`** — rendering engine (copy from `assets/code_flow_graph.html`)
+2. **`code_flow_graph_data.js`** — diagram data (generated per-project)
 
-The HTML loads the JS via `<script src="code_graph_data.js">` and must be in the same directory.
+The HTML loads the JS via `<script src="code_flow_graph_data.js">` and must be in the same directory.
 
 ## Workflow
 
+> **Core principle**: NEVER start building graphs blindly. Always go through the interactive scoping process (Step 0 → Step 1) to let the user decide what to analyze.
+
+### Step 0: Build Project Overview & Confirm Analysis Scope
+
+This step is **MANDATORY** for all projects. You must complete both phases before any code analysis begins.
+
+#### Phase A: Present Project Overview & Ask User to Choose Scope
+
+1. Read the project's top-level structure: README, entry scripts (`__main__.py`, `main.py`, `index.ts`, `app.py`), config files (`setup.py`, `pyproject.toml`, `package.json`, `Cargo.toml`), and directory layout
+2. Determine whether the project has a **UI layer** (Qt, React, Web, etc.) or is **non-UI** (CLI, library, backend, pipeline, etc.)
+3. Build a brief **project overview** listing:
+   - Project type (library / CLI / web service / desktop app / etc.)
+   - Major modules/packages and their purposes
+   - Whether a UI layer exists
+4. **Present the overview to the user** and explicitly ask which part(s) to analyze:
+
+   > "Based on the project structure, here is an overview:
+   >
+   > **Project type**: CLI tool / Library / Web service / ...
+   > **Has UI**: Yes (Qt/React/...) / No
+   >
+   > **Major modules/areas**:
+   > 1. `module_a/` — description
+   > 2. `module_b/` — description
+   > 3. `cli/` — command-line entry points
+   > 4. ...
+   >
+   > Which part(s) would you like to visualize? (You can pick one or more, or say 'all')"
+
+5. **STOP and wait for the user's response.** Do NOT proceed until the user confirms the scope.
+
+#### Phase B: Identify Main Entry Points & Confirm with User
+
+Once the user selects a scope, analyze **only** that portion of the codebase to find the **main execution entry points**:
+
+- **CLI entry points** — `if __name__ == '__main__'`, Click/Typer/argparse commands, `console_scripts`
+- **Public API functions** — exported functions in `__init__.py`, decorated endpoints (`@app.route`, `@api_view`)
+- **Pipeline/task entry points** — Celery tasks, Airflow DAGs, scheduled jobs
+- **Hook/plugin entry points** — registered callbacks, plugin `activate()` methods
+- **Class constructors + primary methods** — the main "do something" methods of core classes
+- **UI entry points** (UI projects only) — main window creation, app initialization, route/page registration
+
+Present the discovered entry points to the user and ask for confirmation:
+
+   > "In the selected scope, I found these main entry points / key logic paths:
+   >
+   > 1. `main()` in `cli.py` — CLI entry, dispatches subcommands
+   > 2. `Pipeline.run()` in `core/pipeline.py` — main processing pipeline
+   > 3. `Converter.convert()` in `converter.py` — core conversion logic
+   > 4. ...
+   >
+   > I will generate one call-chain diagram per entry point above, plus an Overview diagram.
+   > Shall I proceed with all of these, or would you like to pick specific ones?"
+
+**STOP and wait for the user's confirmation.** The user may:
+- Confirm all
+- Pick a subset
+- Add entry points you missed
+- Ask to adjust granularity (more/less detail)
+
 ### Step 1: Analyze the Codebase
 
-Explore the target codebase to identify:
+Only after the user confirms the entry points in Step 0, begin detailed code analysis **within the confirmed scope**.
+
+Identify the following elements:
 
 - **Modules/packages** → become GROUPS (folder-level containers)
 - **Classes/major functions** → become NODES
 - **Methods** → become attributes (attrs) within node sections
 - **Function calls between classes** → become CONNECTIONS
-- **UI widgets and event handlers** → become dedicated UI nodes with event connections
 
-For UI code, additionally identify widget hierarchy, event handler bindings, and which business logic methods each handler calls.
+For **UI projects**, additionally identify:
+- Widget hierarchy, event handler bindings, and which business logic methods each handler calls
+- These become dedicated UI nodes with event connections
+
+For **non-UI projects**, skip all UI-related analysis. Focus on:
+- The **confirmed entry points** and their call chains
+- Each confirmed entry point becomes a dedicated diagram page
+- Cross-module dependencies and shared utilities
 
 ### Step 2: Create Output Folder
 
@@ -50,9 +118,9 @@ Create a new folder inside the project for the visualization output. Naming conv
 
 ### Step 3: Copy the HTML Engine
 
-Copy `assets/code_graph_viewer.html` to the output folder. Do not modify it.
+Copy `assets/code_flow_graph.html` to the output folder. Do not modify it.
 
-#### Engine Features (built-in)
+#### Engine Features (built-in, code_flow_graph.html)
 
 1. **Search** — Ctrl+K opens search box; fuzzy-matches function names across ALL diagrams; click to jump cross-diagram
 2. **Collapsed Children Redirect** — When children are collapsed, connections redirect to the parent attr instead of disappearing
@@ -63,7 +131,7 @@ Copy `assets/code_graph_viewer.html` to the output folder. Do not modify it.
 7. **Position Persistence** — Node positions saved to localStorage per diagram; "Reset Layout" restores defaults
 8. **Connection Anchor via offsetTop** — Connection line anchors use `offsetTop`/`offsetParent` chain (NOT `getBoundingClientRect`) to compute attr Y-offset within a node. This is critical because the canvas uses `CSS transform: scale()` for zoom — `getBoundingClientRect` returns screen-space coordinates that include the scale factor, causing connection lines to misalign at non-1x zoom levels
 
-### Step 4: Generate `code_graph_data.js`
+### Step 4: Generate `code_flow_graph_data.js`
 
 Refer to `references/data_format.md` for the complete data format specification including NODES, CONNECTIONS, GROUPS structure, color schemes, node types, and layout guidelines.
 
@@ -80,15 +148,24 @@ Diagrams are organized **by core entry-point function call chains**, NOT by file
 
 ##### Required Diagrams (in sidebar order)
 
-1. **Overview** — Module-level dependency graph showing all entry functions, UI, and shared services. Keep this high-level (one node per module/class, not per function).
-2. **One diagram per core entry function** — Identified from the UI or entry points. Each diagram traces the **complete call chain** of that function:
+1. **Overview** — Module-level dependency graph showing all confirmed entry points and shared services. Keep this high-level (one node per module/class, not per function). Entry points highlighted with `c-class-1`.
+2. **One diagram per confirmed entry point** — Each diagram traces the **complete call chain** of that entry function:
    - The entry function as the root node
    - Each called function as a separate node (or attr with `children` for small helpers)
    - Each node describes **what the function does** (via `sig` hint) and **which module it lives in**
    - Cross-module calls are shown with different connection colors
    - Utility/external dependencies collected in a dedicated "External Deps" node
-3. **UI** — Widget hierarchy and event handler → business logic dispatch
-4. **Data Types** — Dataclasses, NamedTuples, TypedDicts with field listings and data flow
+3. **UI** (UI projects ONLY, skip for non-UI projects) — Widget hierarchy and event handler → business logic dispatch
+4. **Data Types** (if applicable) — Dataclasses, NamedTuples, TypedDicts with field listings and data flow
+
+##### Non-UI Project Diagram Guidelines
+
+For non-UI projects, **skip all UI-related diagrams and analysis**. The sidebar structure follows the user's confirmed entry points:
+
+1. **Overview** — High-level module dependency graph; each module is a single node, entry points highlighted with `c-class-1`
+2. **One diagram per confirmed entry point** — Named after the entry function (e.g., "Pipeline.run()", "CLI — build command"). Each traces the complete call chain from that entry point
+3. **Data Types** — If the project defines significant data structures
+4. **Config / Constants** (optional) — If configuration or constant definitions are central to understanding the code
 
 ##### How to Build a Call-Chain Diagram
 
@@ -117,7 +194,7 @@ Diagrams are organized **by core entry-point function call chains**, NOT by file
 
 ##### Specialized Diagram Types
 
-**UI Diagrams** — For projects with graphical interfaces (Qt, React, Web):
+**UI Diagrams** — ONLY for projects with graphical interfaces (Qt, React, Web). Skip entirely for non-UI projects:
 1. Create a dedicated diagram entry per major UI view/window
 2. Use `c-ui` class for widget nodes with sections: Widgets, Event Handlers (private), Slots
 3. Draw dashed pink connections from event handlers to business logic
@@ -134,7 +211,7 @@ After generating both files, verify the data file has valid JS syntax.
 
 ## Handling Large Codebases
 
-When the data JS exceeds ~500 lines per diagram entry:
+When the data JS file exceeds ~500 lines per diagram entry:
 
 - Focus on the entry function's direct and second-level calls; collapse deeper calls into `children`
 - Summarize repetitive patterns (e.g., "N similar UV operations") rather than listing every one
@@ -148,7 +225,7 @@ When calculating where bezier connection lines attach to attribute rows, **alway
 
 **Why**: The canvas applies `CSS transform: translate() scale()` for pan & zoom. `getBoundingClientRect()` returns screen-space pixel coordinates that already include the scale factor. When computing `relY = attrRect.top - nodeRect.top`, the result is in scaled pixels, but the connection coordinates are drawn in the unscaled canvas coordinate system. This causes connection lines to progressively misalign as the user zooms in/out.
 
-**Correct pattern** (used in `code_graph_viewer.html`):
+**Correct pattern** (used in `code_flow_graph.html`):
 ```js
 var relY = el.offsetHeight / 2;
 var cur = el;
