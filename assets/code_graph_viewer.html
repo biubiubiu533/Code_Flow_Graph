@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Code Graph Viewer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{background:#1e1e2e;color:#cdd6f4;font-family:'Segoe UI','Microsoft YaHei',sans-serif;display:flex}
+#sidebar{width:240px;min-width:240px;background:#181825;border-right:1px solid #313244;display:flex;flex-direction:column;z-index:200;user-select:none}
+#sidebar .sidebar-title{padding:14px 16px 10px;font-size:14px;font-weight:bold;color:#89b4fa;border-bottom:1px solid #313244;letter-spacing:.5px}
+#sidebar .nav-list{flex:1;padding:8px 0;overflow-y:auto}
+.nav-item{padding:10px 16px;cursor:pointer;font-size:13px;border-left:3px solid transparent;transition:background .15s,border-color .15s;display:flex;flex-direction:column;gap:2px}
+.nav-item:hover{background:rgba(137,180,250,.08)}
+.nav-item.active{background:rgba(137,180,250,.12);border-left-color:#89b4fa}
+.nav-item .nav-label{font-weight:600;color:#cdd6f4}
+.nav-item .nav-sub{font-size:10px;color:#6c7086}
+.nav-item.active .nav-label{color:#89b4fa}
+#sidebar .sidebar-footer{padding:10px 16px;border-top:1px solid #313244;font-size:10px;color:#585b70;line-height:1.5}
+/* Search box */
+#searchBox{margin:8px 12px;padding:6px 10px;background:#313244;border:1px solid #45475a;border-radius:6px;color:#cdd6f4;font-size:12px;outline:none;width:calc(100% - 24px)}
+#searchBox:focus{border-color:#89b4fa}
+#searchBox::placeholder{color:#585b70}
+.search-results{max-height:200px;overflow-y:auto;border-bottom:1px solid #313244}
+.search-result{padding:6px 16px;cursor:pointer;font-size:11px;font-family:'Consolas',monospace;color:#89dceb;transition:background .12s;display:flex;flex-direction:column;gap:1px}
+.search-result:hover{background:rgba(137,180,250,.1)}
+.search-result .sr-module{font-size:9px;color:#6c7086}
+#main{flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden}
+#header{background:rgba(30,30,46,.92);backdrop-filter:blur(6px);padding:8px 0 6px;text-align:center;border-bottom:1px solid #313244;z-index:100}
+#header h1{color:#89b4fa;font-size:18px;margin-bottom:2px}
+#header .sub{color:#6c7086;font-size:11px}
+.legend{display:flex;gap:12px;justify-content:center;margin-top:4px;flex-wrap:wrap;font-size:11px}
+.legend-item{display:flex;align-items:center;gap:4px}
+.legend-color{width:12px;height:12px;border-radius:2px;border:1px solid #45475a}
+#content-area{flex:1;display:flex;position:relative;overflow:hidden}
+#viewport{flex:1;position:relative;overflow:hidden;cursor:grab}
+#viewport.panning{cursor:grabbing}
+#canvas{position:absolute;transform-origin:0 0}
+svg#svg{position:absolute;top:0;left:0;pointer-events:none;z-index:1;overflow:visible}
+svg#svg path{fill:none;stroke-width:1.6;opacity:.45;transition:opacity .2s,stroke-width .2s}
+svg#svg path.hl{opacity:1;stroke-width:3}
+svg#svg path.dim{opacity:.06}
+/* Call chain detail panel */
+#detail-panel{width:0;min-width:0;background:#181825;border-left:1px solid #313244;overflow-y:auto;transition:width .25s ease,min-width .25s ease;z-index:150;display:flex;flex-direction:column}
+#detail-panel.open{width:360px;min-width:360px}
+#detail-panel .dp-header{padding:10px 14px;border-bottom:1px solid #313244;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#181825;z-index:1}
+#detail-panel .dp-title{font-size:13px;font-weight:bold;color:#89b4fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#detail-panel .dp-close{width:24px;height:24px;border:none;background:transparent;color:#6c7086;cursor:pointer;font-size:16px;border-radius:4px;display:flex;align-items:center;justify-content:center}
+#detail-panel .dp-close:hover{background:#313244;color:#cdd6f4}
+#detail-panel .dp-body{padding:8px 0;flex:1}
+.call-tree{font-family:'Consolas','Courier New',monospace;font-size:12.5px;line-height:1.7}
+.ct-node{padding:3px 14px 3px;cursor:default;display:flex;align-items:flex-start;gap:5px;transition:background .12s}
+.ct-node:hover{background:rgba(137,180,250,.06)}
+.ct-node.ct-current{background:rgba(250,179,135,.15);border-left:3px solid #fab387}
+.ct-node.ct-external{opacity:.7;font-style:italic}
+.ct-toggle{cursor:pointer;user-select:none;width:16px;min-width:16px;text-align:center;color:#585b70;font-size:11px;line-height:1.7}
+.ct-toggle:hover{color:#89b4fa}
+.ct-icon{width:16px;min-width:16px;text-align:center;font-size:11px;color:#585b70}
+.ct-name{color:#89dceb;font-size:12.5px}
+.ct-module{color:#6c7086;font-size:11px;margin-left:4px}
+.ct-sig{color:#585b70;font-size:11px}
+.ct-desc{color:#a6adc8;font-size:12px;padding:2px 14px 4px 34px;line-height:1.6;border-left:2px solid transparent;font-family:'Segoe UI','Microsoft YaHei',sans-serif}
+.ct-desc-text{display:block;opacity:.88}
+.ct-node.ct-clickable{cursor:pointer}
+.ct-node.ct-clickable:hover{background:rgba(137,180,250,.12)}
+.ct-node.ct-active{background:rgba(137,180,250,.18);border-left:3px solid #89b4fa}
+.ct-children{padding-left:16px;border-left:1px solid #313244;margin-left:6px}
+.ct-children.collapsed{display:none}
+/* Node styles */
+.node{position:absolute;border-radius:8px;border:2px solid;z-index:2;box-shadow:0 3px 12px rgba(0,0,0,.4);transition:opacity .2s;min-width:50px}
+.node.dim{opacity:.18}
+.node.dragging{z-index:10;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+/* Class node: double border effect */
+.node.node-class{border-width:2px;border-style:double}
+.node.node-class .node-header{letter-spacing:.3px}
+/* Function/module node: single solid border, rounded differently */
+.node.node-function{border-width:1.5px;border-style:solid;border-radius:12px}
+.node.node-function .node-header{border-radius:10px 10px 0 0}
+/* Singleton node: dashed border */
+.node.node-singleton{border-width:2px;border-style:dashed}
+/* External node: dotted border, lower opacity */
+.node.node-external{border-width:1.5px;border-style:dotted;opacity:.85}
+/* UI/widget node */
+.node.node-widget{border-width:2px}
+.node-header{padding:5px 10px;font-weight:bold;font-size:12px;border-radius:6px 6px 0 0;border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap;cursor:move;user-select:none;display:flex;align-items:center;gap:6px}
+.node-badge{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;opacity:.85}
+.node-badge-class{background:rgba(0,0,0,.25);color:#f9e2af}
+.node-badge-func{background:rgba(0,0,0,.25);color:#a6e3a1}
+.node-badge-module{background:rgba(0,0,0,.25);color:#89b4fa}
+.node-badge-singleton{background:rgba(0,0,0,.25);color:#cba6f7}
+.node-badge-ui{background:rgba(0,0,0,.25);color:#f5c2e7}
+.node-badge-ext{background:rgba(0,0,0,.25);color:#6c7086}
+.node-type{font-size:9px;font-weight:normal;opacity:.65;margin-left:4px}
+.node-body{padding:3px 0}
+.attr{padding:1px 8px;font-size:10.5px;font-family:'Consolas','Courier New',monospace;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .12s;user-select:none;min-height:18px}
+.attr:hover{background:rgba(255,255,255,.07)}
+.attr.hl{background:rgba(250,179,135,.35)!important;outline:1px solid rgba(250,179,135,.5)}
+.attr-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.attr-value{color:#a6adc8;font-size:9.5px;margin-left:6px;white-space:nowrap}
+.attr-public{background:rgba(166,227,161,.06);border-left:3px solid #a6e3a1}
+.attr-private{border-left:3px solid #f38ba8}
+.attr-builtin{border-left:3px solid transparent}
+.attr-section{padding:2px 8px 1px;font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#585b70;border-top:1px solid rgba(255,255,255,.04);margin-top:1px}
+/* Collapsible children */
+.attr-toggle{cursor:pointer;user-select:none;font-size:8px;color:#585b70;margin-right:3px;transition:transform .15s,color .15s;display:inline-block;width:10px;text-align:center}
+.attr-toggle:hover{color:#89b4fa}
+.attr-toggle.expanded{transform:rotate(90deg)}
+.attr-children-group{overflow:hidden;transition:max-height .2s ease}
+.attr-children-group.collapsed{max-height:0!important}
+/* Child attrs */
+.attr-child{padding-left:24px;font-size:9.5px;opacity:.85;border-left-width:2px!important;min-height:16px}
+.attr-child .attr-name{font-size:9.5px}
+.attr-child .attr-value{font-size:8.5px}
+/* Tooltip for function signatures */
+.sig-tooltip{position:fixed;z-index:10000;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:6px;padding:10px 14px;font-family:'Consolas','Courier New',monospace;font-size:11.5px;line-height:1.7;max-width:560px;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.5);white-space:pre-wrap;word-break:break-all}
+.sig-tooltip .sig-params{color:#f9e2af}
+.sig-tooltip .sig-return{color:#a6e3a1}
+.sig-tooltip .sig-name{color:#89b4fa;font-weight:bold}
+.sig-tooltip .sig-type{color:#cba6f7;font-style:italic}
+.sig-tooltip .sig-hint{color:#585b70;font-size:10px;margin-top:4px;display:block}
+.sig-tooltip .sig-desc{color:#bac2de;font-family:'Segoe UI','Microsoft YaHei',sans-serif;font-size:12px;margin-top:5px;padding-top:5px;border-top:1px solid #45475a;display:block;line-height:1.5}
+.sig-tooltip .sig-io{display:block;margin-top:5px;padding-top:5px;border-top:1px solid #45475a;font-size:11px;line-height:1.6}
+.sig-tooltip .sig-io-label{color:#89b4fa;font-weight:bold;font-family:'Segoe UI','Microsoft YaHei',sans-serif;font-size:10.5px}
+.sig-tooltip .sig-io-input{color:#f9e2af;display:block;padding-left:8px}
+.sig-tooltip .sig-io-output{color:#a6e3a1;display:block;padding-left:8px}
+/* Node color classes — Catppuccin Mocha palette. UNIFIED across all pages by semantic meaning */
+/* c-class-1: yellow — entry/pipeline orchestrator */
+.c-class-1{border-color:#f9e2af;background:#2d2a1e}.c-class-1 .node-header{background:#f9e2af;color:#1e1e2e}
+/* c-class-2: green — core logic / hair conversion */
+.c-class-2{border-color:#a6e3a1;background:#1e2d1e}.c-class-2 .node-header{background:#a6e3a1;color:#1e1e2e}
+/* c-class-3: red — GS builder / shape matching */
+.c-class-3{border-color:#f38ba8;background:#2d1e22}.c-class-3 .node-header{background:#f38ba8;color:#1e1e2e}
+/* c-class-4: mauve — compat mode */
+.c-class-4{border-color:#cba6f7;background:#251e2d}.c-class-4 .node-header{background:#cba6f7;color:#1e1e2e}
+/* c-class-5: teal — multi-mesh mode */
+.c-class-5{border-color:#94e2d5;background:#1e2d2a}.c-class-5 .node-header{background:#94e2d5;color:#1e1e2e}
+/* c-class-6: blue — UV cache / shared services */
+.c-class-6{border-color:#89b4fa;background:#1e222d}.c-class-6 .node-header{background:#89b4fa;color:#1e1e2e}
+/* c-class-7: sapphire — external deps */
+.c-class-7{border-color:#74c7ec;background:#1e272d}.c-class-7 .node-header{background:#74c7ec;color:#1e1e2e}
+/* c-class-8: maroon — data types / dataclass */
+.c-class-8{border-color:#eba0ac;background:#2d1e25}.c-class-8 .node-header{background:#eba0ac;color:#1e1e2e}
+/* c-class-9: lavender — compat utils */
+.c-class-9{border-color:#b4befe;background:#22222d}.c-class-9 .node-header{background:#b4befe;color:#1e1e2e}
+/* c-class-10: pink — signals/events */
+.c-class-10{border-color:#f5c2e7;background:#2d1e28}.c-class-10 .node-header{background:#f5c2e7;color:#1e1e2e}
+/* c-class-11: sky — multi-mesh utils */
+.c-class-11{border-color:#89dceb;background:#1e2a2d}.c-class-11 .node-header{background:#89dceb;color:#1e1e2e}
+/* c-class-12: peach — utils */
+.c-class-12{border-color:#fab387;background:#2d251e}.c-class-12 .node-header{background:#fab387;color:#1e1e2e}
+/* c-ui: flamingo — for UI components */
+.c-ui{border-color:#f2cdcd;background:#2d2225}.c-ui .node-header{background:#f2cdcd;color:#1e1e2e}
+.group-bg{position:absolute;border-radius:12px;border:1.5px dashed;z-index:0;cursor:grab;transition:opacity .2s}
+.group-bg:hover{border-width:2.5px}
+.group-bg.group-dragging{cursor:grabbing;border-width:2.5px;border-style:solid}
+.group-bg.dim{opacity:.06}.group-label.dim{opacity:.06}
+.group-label{position:absolute;font-size:11px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:4px;z-index:0;cursor:grab;white-space:nowrap}
+.code-block{white-space:pre-wrap;font-size:9.5px;padding:3px 8px;line-height:1.4;color:#bac2de;font-family:'Consolas','Courier New',monospace}
+.controls{position:fixed;bottom:12px;right:12px;z-index:100;display:flex;gap:3px;flex-direction:column;align-items:flex-end}
+.controls .row{display:flex;gap:3px}
+.controls button{width:30px;height:30px;border:1px solid #45475a;background:#313244;color:#cdd6f4;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.controls button:hover{background:#45475a}
+.controls .info{font-size:10px;color:#585b70;text-align:right;margin-top:2px}
+/* Field detail panel styles */
+.fd-container{padding:8px 14px;font-family:'Segoe UI','Microsoft YaHei',sans-serif}
+.fd-header{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #313244}
+.fd-field-name{font-size:15px;font-weight:bold;color:#eba0ac;font-family:'Consolas',monospace}
+.fd-field-type{font-size:12px;color:#6c7086;font-family:'Consolas',monospace}
+.fd-summary{font-size:12.5px;color:#bac2de;line-height:1.6;margin-bottom:12px;padding:8px 10px;background:rgba(235,160,172,0.08);border-radius:6px;border-left:3px solid #eba0ac}
+.fd-mode{margin-bottom:14px;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:6px;border:1px solid #313244}
+.fd-mode-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.fd-mode-badge{font-size:10px;font-weight:bold;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;background:rgba(137,180,250,0.15);color:#89b4fa;white-space:nowrap}
+.fd-mode-fn{font-size:11px;color:#89dceb;font-family:'Consolas',monospace;word-break:break-all}
+.fd-steps{margin:0;padding-left:20px;font-size:11.5px;color:#cdd6f4;line-height:1.8}
+.fd-step{margin-bottom:3px}
+.fd-step code{background:rgba(203,166,247,0.12);color:#cba6f7;padding:1px 4px;border-radius:3px;font-family:'Consolas',monospace;font-size:10.5px}
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <div class="sidebar-title" id="sidebarTitle">Code Graph Viewer</div>
+  <input type="text" id="searchBox" placeholder="Search functions... (Ctrl+K)" autocomplete="off">
+  <div class="search-results" id="searchResults"></div>
+  <div class="nav-list" id="navList"></div>
+  <div class="sidebar-footer">
+    Drag header to move node<br>Drag group border to move group<br><b>Click</b> function → view call chain<br>Scroll to zoom / Space+drag to pan<br><b>Hover</b> on function to see signature<br><b>▶</b> to expand/collapse children
+  </div>
+</div>
+<div id="main">
+  <div id="header">
+    <h1 id="diagramTitle"></h1>
+    <div class="sub" id="diagramSub"></div>
+    <div class="legend" id="legendContainer">
+      <div class="legend-item"><div class="legend-color" style="background:#a6e3a1"></div>public</div>
+      <div class="legend-item"><div class="legend-color" style="background:transparent;border:2px solid #f38ba8"></div>private</div>
+      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1.5px double #cdd6f4;border-radius:3px;padding:0 3px;margin-right:2px">C</span>class</div>
+      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1px solid #cdd6f4;border-radius:6px;padding:0 3px;margin-right:2px">ƒ</span>function</div>
+      <div class="legend-item"><span style="font-size:9px;color:#585b70;border:1.5px dashed #cdd6f4;border-radius:3px;padding:0 3px;margin-right:2px">S</span>singleton</div>
+      <div class="legend-item" style="color:#6c7086">━ call ┅ signal/event</div>
+      <div class="legend-item"><div class="legend-color" style="background:#a6e3a1"></div><span style="font-size:9px">call</span></div>
+      <div class="legend-item"><div class="legend-color" style="background:#89b4fa"></div><span style="font-size:9px">data</span></div>
+      <div class="legend-item"><div class="legend-color" style="background:#fab387"></div><span style="font-size:9px">extern</span></div>
+      <div class="legend-item"><div class="legend-color" style="background:#f5c2e7"></div><span style="font-size:9px">signal</span></div>
+      <div class="legend-item"><a href="#" id="resetLayoutBtn" style="color:#f38ba8;text-decoration:underline;cursor:pointer;font-size:11px">Reset Layout</a></div>
+    </div>
+  </div>
+  <div id="content-area">
+    <div id="viewport">
+      <div id="canvas"><svg id="svg" width="6000" height="4000"></svg></div>
+    </div>
+    <div id="detail-panel">
+      <div class="dp-header">
+        <span class="dp-title" id="dpTitle">Call Chain</span>
+        <button class="dp-close" id="dpClose" title="Close">✕</button>
+      </div>
+      <div class="dp-body" id="dpBody"></div>
+    </div>
+  </div>
+</div>
+<div class="controls">
+  <div class="row">
+    <button id="zoomIn" title="Zoom In">+</button>
+    <button id="zoomOut" title="Zoom Out">−</button>
+    <button id="zoomFit" title="Fit to View">⊡</button>
+    <button id="zoomReset" title="1:1">1:1</button>
+  </div>
+  <div class="info" id="zoomInfo">100%</div>
+</div>
+<script src="code_graph_data.js"></script>
+<script>
+// ======================== ENGINE ========================
+var canvas = document.getElementById('canvas');
+var svg = document.getElementById('svg');
+var viewport = document.getElementById('viewport');
+var detailPanel = document.getElementById('detail-panel');
+var dpBody = document.getElementById('dpBody');
+var dpTitle = document.getElementById('dpTitle');
+var attrElements = {}, nodeElements = {}, nodePositions = {}, groupElements = {};
+var connData = [], currentDiagramKey = null;
+var NODES, CONNECTIONS, GROUPS;
+var scale = 1, panX = 0, panY = 0;
+var isPanning = false, panStart = {x:0,y:0,px:0,py:0}, spaceHeld = false, panMoved = false;
+var dragState = null, groupDragState = null, selectedAttr = null;
+
+// Tooltip element
+var tooltip = document.createElement('div');
+tooltip.className = 'sig-tooltip';
+tooltip.style.display = 'none';
+document.body.appendChild(tooltip);
+var attrSigMap = {}; // aid -> sig html
+var attrDescMap = {}; // aid -> description text (Chinese)
+var attrIOMap = {}; // aid -> {input: '', output: ''} for tooltip IO display
+var attrCallChainMap = {}; // aid -> callChain array
+var attrFieldDetailMap = {}; // aid -> fieldDetail object (for data type fields)
+
+// Node type to CSS class mapping
+var NODE_TYPE_MAP = {
+  'class': 'node-class',
+  'singleton': 'node-singleton',
+  'module': 'node-function',
+  'function': 'node-function',
+  'functions': 'node-function',
+  'entry': 'node-function',
+  'external': 'node-external',
+  'QDialog': 'node-widget',
+  'widget': 'node-widget',
+  'slots': 'node-widget'
+};
+
+var NODE_BADGE_MAP = {
+  'class': '<span class="node-badge node-badge-class">CLASS</span>',
+  'singleton': '<span class="node-badge node-badge-singleton">SINGLETON</span>',
+  'module': '<span class="node-badge node-badge-module">MODULE</span>',
+  'function': '<span class="node-badge node-badge-func">FUNC</span>',
+  'functions': '<span class="node-badge node-badge-func">FUNC</span>',
+  'entry': '<span class="node-badge node-badge-func">ENTRY</span>',
+  'external': '<span class="node-badge node-badge-ext">EXT</span>',
+  'QDialog': '<span class="node-badge node-badge-ui">UI</span>',
+  'widget': '<span class="node-badge node-badge-ui">WIDGET</span>',
+  'slots': '<span class="node-badge node-badge-ui">SLOTS</span>'
+};
+
+if (typeof DIAGRAMS !== 'undefined' && DIAGRAMS._projectTitle) {
+  document.getElementById('sidebarTitle').textContent = DIAGRAMS._projectTitle;
+}
+
+function storageKey(key) { return 'code_graph_' + key + '_positions'; }
+function loadSavedPositions(key) {
+  try { var r = localStorage.getItem(storageKey(key)); return r ? JSON.parse(r) : {}; }
+  catch(e) { return {}; }
+}
+function savePositions() {
+  if (!currentDiagramKey) return;
+  try { localStorage.setItem(storageKey(currentDiagramKey), JSON.stringify(nodePositions)); } catch(e) {}
+}
+
+// Build sidebar nav
+var diagKeys = Object.keys(DIAGRAMS).filter(function(k) { return k.charAt(0) !== '_'; });
+var navList = document.getElementById('navList');
+diagKeys.forEach(function(key) {
+  var d = DIAGRAMS[key];
+  var item = document.createElement('div');
+  item.className = 'nav-item';
+  item.dataset.diagram = key;
+  item.innerHTML = '<span class="nav-label">' + d.navLabel + '</span><span class="nav-sub">' + (d.navSub || '') + '</span>';
+  item.addEventListener('click', function() { switchDiagram(key); });
+  navList.appendChild(item);
+});
+
+function renderAttrHtml(a, isChild, parentHasChildren) {
+  var cls = 'attr' + (isChild ? ' attr-child' : '');
+  if (a.visibility === 'public') cls += ' attr-public';
+  else if (a.visibility === 'private') cls += ' attr-private';
+  else cls += ' attr-builtin';
+  var valHtml = a.val ? '<span class="attr-value">' + a.val + '</span>' : '';
+  var prefix = isChild ? '<span style="color:#585b70;margin-right:3px;font-size:8px">▸</span>' : '';
+  return '<div class="' + cls + '" data-aid="' + a.id + '">' + prefix + '<span class="attr-name">' + a.name + '</span>' + valHtml + '</div>';
+}
+
+function switchDiagram(key) {
+  if (currentDiagramKey === key) return;
+  currentDiagramKey = key;
+  var d = DIAGRAMS[key];
+  NODES = d.NODES; CONNECTIONS = d.CONNECTIONS; GROUPS = d.GROUPS;
+
+  document.getElementById('diagramTitle').textContent = d.title;
+  document.getElementById('diagramSub').textContent = d.sub || '';
+
+  document.querySelectorAll('.nav-item').forEach(function(el) {
+    el.classList.toggle('active', el.dataset.diagram === key);
+  });
+
+  var children = Array.from(canvas.children);
+  children.forEach(function(ch) { if (ch !== svg) canvas.removeChild(ch); });
+  svg.innerHTML = '';
+  attrElements = {}; nodeElements = {}; nodePositions = {}; groupElements = {};
+  connData = []; selectedAttr = null; dragState = null; groupDragState = null;
+  attrSigMap = {}; attrDescMap = {}; attrIOMap = {}; attrCallChainMap = {}; attrFieldDetailMap = {};
+  closeDetailPanel();
+
+  var savedPos = loadSavedPositions(key);
+
+  NODES.forEach(function(n) {
+    var el = document.createElement('div');
+    var nodeTypeCls = NODE_TYPE_MAP[n.type] || 'node-function';
+    el.className = 'node ' + n.cls + ' ' + nodeTypeCls;
+    el.dataset.nodeId = n.id;
+    var pos = savedPos[n.id] || {x: n.x, y: n.y};
+    el.style.left = pos.x + 'px';
+    el.style.top = pos.y + 'px';
+    el.style.width = n.w + 'px';
+    var badge = NODE_BADGE_MAP[n.type] || '';
+    var html = '<div class="node-header" data-drag="' + n.id + '">' + n.label + ' ' + badge + '</div><div class="node-body">';
+    (n.sections || []).forEach(function(sec) {
+      if (sec.code) html += '<div class="code-block">' + sec.code + '</div>';
+      if (sec.title) html += '<div class="attr-section">' + sec.title + '</div>';
+      (sec.attrs || []).forEach(function(a) {
+        if (a.sig) attrSigMap[a.id] = a.sig;
+        if (a.desc) attrDescMap[a.id] = a.desc;
+        if (a.io) attrIOMap[a.id] = a.io;
+        if (a.callChain) attrCallChainMap[a.id] = a.callChain;
+        if (a.fieldDetail) attrFieldDetailMap[a.id] = a.fieldDetail;
+        var hasChildren = a.children && a.children.length > 0;
+        var defaultCollapsed = a.childrenCollapsed !== false; // default collapsed
+
+        if (hasChildren) {
+          // Render toggle button inline with the attr
+          var toggleId = 'toggle-' + a.id.replace(/\./g, '-');
+          var cls = 'attr';
+          if (a.visibility === 'public') cls += ' attr-public';
+          else if (a.visibility === 'private') cls += ' attr-private';
+          else cls += ' attr-builtin';
+          var valHtml = a.val ? '<span class="attr-value">' + a.val + '</span>' : '';
+          html += '<div class="' + cls + '" data-aid="' + a.id + '">';
+          html += '<span class="attr-toggle' + (defaultCollapsed ? '' : ' expanded') + '" data-toggle="' + toggleId + '">▶</span>';
+          html += '<span class="attr-name">' + a.name + '</span>' + valHtml + '</div>';
+          // Children group
+          html += '<div class="attr-children-group' + (defaultCollapsed ? ' collapsed' : '') + '" id="' + toggleId + '">';
+          a.children.forEach(function(child) {
+            if (child.sig) attrSigMap[child.id] = child.sig;
+            if (child.desc) attrDescMap[child.id] = child.desc;
+            if (child.io) attrIOMap[child.id] = child.io;
+            if (child.callChain) attrCallChainMap[child.id] = child.callChain;
+            html += renderAttrHtml(child, true);
+          });
+          html += '</div>';
+        } else {
+          html += renderAttrHtml(a, false);
+        }
+      });
+    });
+    html += '</div>';
+    el.innerHTML = html;
+    canvas.appendChild(el);
+    nodeElements[n.id] = el;
+    nodePositions[n.id] = savedPos[n.id] || {x: n.x, y: n.y};
+    el.querySelectorAll('[data-aid]').forEach(function(ae) { attrElements[ae.dataset.aid] = ae; });
+  });
+
+  var GROUP_PAD = 18;
+  GROUPS.forEach(function(g) {
+    var bg = document.createElement('div');
+    bg.className = 'group-bg'; bg.dataset.groupId = g.id;
+    bg.style.borderColor = g.color; bg.style.background = g.bg;
+    canvas.insertBefore(bg, canvas.firstChild);
+    var lbl = document.createElement('div');
+    lbl.className = 'group-label'; lbl.dataset.groupId = g.id;
+    lbl.style.color = g.color; lbl.style.background = g.bg;
+    lbl.textContent = g.label;
+    canvas.insertBefore(lbl, canvas.firstChild);
+    groupElements[g.id] = {bg: bg, lbl: lbl, nodeIds: g.nodes};
+  });
+
+  scale = 1; panX = 0; panY = 0;
+  applyTransform(); // sync canvas transform to scale=1 before measuring
+  requestAnimationFrame(function() {
+    updateGroupBounds(); redrawConnections(); fitToView();
+  });
+}
+
+// Toggle children collapse
+canvas.addEventListener('click', function(e) {
+  var toggleEl = e.target.closest('.attr-toggle');
+  if (toggleEl) {
+    e.stopPropagation();
+    var targetId = toggleEl.dataset.toggle;
+    var group = document.getElementById(targetId);
+    if (group) {
+      var isCollapsed = group.classList.contains('collapsed');
+      if (isCollapsed) {
+        group.classList.remove('collapsed');
+        group.style.maxHeight = group.scrollHeight + 'px';
+        toggleEl.classList.add('expanded');
+      } else {
+        group.style.maxHeight = group.scrollHeight + 'px';
+        requestAnimationFrame(function() {
+          group.classList.add('collapsed');
+          toggleEl.classList.remove('expanded');
+        });
+      }
+      // Redraw connections after expand/collapse
+      setTimeout(function() { redrawConnections(); updateGroupBounds(); }, 250);
+    }
+    return;
+  }
+});
+
+function updateGroupBounds() {
+  var GROUP_PAD = 18;
+  GROUPS.forEach(function(g) {
+    var ge = groupElements[g.id]; if (!ge) return;
+    var bg = ge.bg, lbl = ge.lbl, nodeIds = ge.nodeIds;
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    nodeIds.forEach(function(nid) {
+      var el = nodeElements[nid], pos = nodePositions[nid];
+      if (!el || !pos) return;
+      minX = Math.min(minX, pos.x); minY = Math.min(minY, pos.y);
+      maxX = Math.max(maxX, pos.x + el.offsetWidth); maxY = Math.max(maxY, pos.y + el.offsetHeight);
+    });
+    if (minX === Infinity) return;
+    bg.style.left = (minX - GROUP_PAD) + 'px'; bg.style.top = (minY - GROUP_PAD - 20) + 'px';
+    bg.style.width = (maxX - minX + GROUP_PAD * 2) + 'px'; bg.style.height = (maxY - minY + GROUP_PAD * 2 + 20) + 'px';
+    lbl.style.left = (minX - GROUP_PAD + 6) + 'px'; lbl.style.top = (minY - GROUP_PAD - 18) + 'px';
+  });
+}
+
+function getAttrAnchor(aid, side) {
+  var el = attrElements[aid]; if (!el) return null;
+  // Check if parent is collapsed — redirect to parent attr
+  var parentGroup = el.closest('.attr-children-group');
+  if (parentGroup && parentGroup.classList.contains('collapsed')) {
+    // Find parent attr (the element before the children group)
+    var prev = parentGroup.previousElementSibling;
+    if (prev && prev.dataset && prev.dataset.aid) {
+      el = prev; // redirect to parent
+    } else {
+      return null;
+    }
+  }
+  var nodeEl = el.closest('.node');
+  var nid = nodeEl.dataset.nodeId, pos = nodePositions[nid], nodeW = nodeEl.offsetWidth;
+  // Use offsetTop chain instead of getBoundingClientRect to avoid CSS transform scale distortion
+  var relY = el.offsetHeight / 2;
+  var cur = el;
+  while (cur && cur !== nodeEl) {
+    relY += cur.offsetTop;
+    cur = cur.offsetParent;
+  }
+  if (side === 'right') return {x: pos.x + nodeW, y: pos.y + relY};
+  return {x: pos.x, y: pos.y + relY};
+}
+
+function redrawConnections() {
+  svg.innerHTML = ''; connData = [];
+  CONNECTIONS.forEach(function(c, idx) {
+    var srcId = c[0], tgtId = c[1], color = c[2], dashed = c[3];
+    var srcEl = attrElements[srcId], tgtEl = attrElements[tgtId];
+    if (!srcEl || !tgtEl) return;
+    var srcNode = srcEl.closest('.node').dataset.nodeId;
+    var tgtNode = tgtEl.closest('.node').dataset.nodeId;
+    var srcPos = nodePositions[srcNode], tgtPos = nodePositions[tgtNode];
+    var srcNW = nodeElements[srcNode].offsetWidth, tgtNW = nodeElements[tgtNode].offsetWidth;
+    var srcCenterX = srcPos.x + srcNW / 2, tgtCenterX = tgtPos.x + tgtNW / 2;
+    var srcSide, tgtSide;
+    if (srcCenterX <= tgtCenterX) { srcSide = 'right'; tgtSide = 'left'; }
+    else { srcSide = 'left'; tgtSide = 'right'; }
+    var p1 = getAttrAnchor(srcId, srcSide), p2 = getAttrAnchor(tgtId, tgtSide);
+    if (!p1 || !p2) return;
+    var dx = Math.abs(p2.x - p1.x), cpOff = Math.max(dx * 0.35, 50);
+    var cp1x = srcSide === 'right' ? p1.x + cpOff : p1.x - cpOff;
+    var cp2x = tgtSide === 'left' ? p2.x - cpOff : p2.x + cpOff;
+    var d = 'M ' + p1.x + ' ' + p1.y + ' C ' + cp1x + ' ' + p1.y + ', ' + cp2x + ' ' + p2.y + ', ' + p2.x + ' ' + p2.y;
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d); path.setAttribute('stroke', color);
+    if (dashed) path.setAttribute('stroke-dasharray', '6 4');
+    svg.appendChild(path);
+    connData.push({srcId: srcId, tgtId: tgtId, path: path, idx: idx});
+  });
+}
+
+// TOOLTIP — show function signature + desc + IO on hover
+canvas.addEventListener('mouseover', function(e) {
+  var attrEl = e.target.closest('[data-aid]');
+  if (!attrEl) return;
+  var aid = attrEl.dataset.aid;
+  var sig = attrSigMap[aid];
+  var desc = attrDescMap[aid];
+  var io = attrIOMap[aid];
+  var fd = attrFieldDetailMap[aid];
+  if (!sig && !desc && !io && !fd) return;
+  var html = '';
+  if (sig) html += sig;
+  if (desc) html += '<span class="sig-desc">' + desc + '</span>';
+  if (!desc && fd) html += '<span class="sig-desc">' + fd.summary + '</span>';
+  if (io) {
+    html += '<span class="sig-io">';
+    if (io.input) html += '<span class="sig-io-label">输入：</span><span class="sig-io-input">' + io.input + '</span>';
+    if (io.output) html += '<span class="sig-io-label">输出：</span><span class="sig-io-output">' + io.output + '</span>';
+    html += '</span>';
+  }
+  var hint = attrCallChainMap[aid] ? '\n<span class="sig-hint">Click to view call chain →</span>' :
+             attrFieldDetailMap[aid] ? '\n<span class="sig-hint">Click to view computation process →</span>' : '';
+  tooltip.innerHTML = html + hint;
+  tooltip.style.display = 'block';
+  positionTooltip(e);
+});
+canvas.addEventListener('mousemove', function(e) {
+  if (tooltip.style.display === 'block') positionTooltip(e);
+});
+canvas.addEventListener('mouseout', function(e) {
+  var attrEl = e.target.closest('[data-aid]');
+  if (attrEl) {
+    var related = e.relatedTarget;
+    if (related && related.closest && related.closest('[data-aid]') === attrEl) return;
+    tooltip.style.display = 'none';
+  }
+});
+function positionTooltip(e) {
+  var x = e.clientX + 14, y = e.clientY + 14;
+  if (x + tooltip.offsetWidth > window.innerWidth - 10) x = e.clientX - tooltip.offsetWidth - 10;
+  if (y + tooltip.offsetHeight > window.innerHeight - 10) y = e.clientY - tooltip.offsetHeight - 10;
+  tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+}
+
+// DETAIL PANEL — call chain viewer
+function openDetailPanel(aid) {
+  var chain = attrCallChainMap[aid];
+  if (!chain) return;
+  dpTitle.textContent = aid.split('.').pop() + '() — Call Chain';
+  dpBody.innerHTML = '';
+  var tree = document.createElement('div');
+  tree.className = 'call-tree';
+  renderCallTree(tree, chain, aid);
+  dpBody.appendChild(tree);
+  detailPanel.classList.add('open');
+  // Highlight the attr and connections
+  clearHighlight();
+  selectedAttr = aid;
+  reHighlight();
+}
+
+function renderCallTree(container, items, currentAid) {
+  items.forEach(function(item) {
+    var nodeDiv = document.createElement('div');
+    var hasChildren = item.calls && item.calls.length > 0;
+    var isCurrent = item.id === currentAid;
+    var isExternal = item.external;
+    var isClickable = !!item.id;
+
+    // Row
+    var row = document.createElement('div');
+    row.className = 'ct-node' + (isCurrent ? ' ct-current' : '') + (isExternal ? ' ct-external' : '') + (isClickable ? ' ct-clickable' : '');
+    row.dataset.ctAid = item.id || '';
+    row.dataset.ctName = item.name || '';
+
+    if (hasChildren) {
+      var toggle = document.createElement('span');
+      toggle.className = 'ct-toggle';
+      toggle.textContent = '▶';
+      toggle.style.transform = 'rotate(90deg)';
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var childDiv = nodeDiv.querySelector('.ct-children');
+        if (childDiv) {
+          var collapsed = childDiv.classList.toggle('collapsed');
+          toggle.style.transform = collapsed ? 'rotate(0deg)' : 'rotate(90deg)';
+        }
+      });
+      row.appendChild(toggle);
+    } else {
+      var icon = document.createElement('span');
+      icon.className = 'ct-icon';
+      icon.textContent = isExternal ? '◇' : '•';
+      row.appendChild(icon);
+    }
+
+    var nameSpan = document.createElement('span');
+    nameSpan.className = 'ct-name';
+    nameSpan.textContent = item.name || item.id;
+    row.appendChild(nameSpan);
+
+    if (item.module) {
+      var modSpan = document.createElement('span');
+      modSpan.className = 'ct-module';
+      modSpan.textContent = '[' + item.module + ']';
+      row.appendChild(modSpan);
+    }
+
+    // Click to highlight corresponding node in graph AND navigate
+    row.addEventListener('click', function(e) {
+      if (e.target.closest('.ct-toggle')) return;
+      // Clear previous active state in call tree
+      dpBody.querySelectorAll('.ct-node.ct-active').forEach(function(el) { el.classList.remove('ct-active'); });
+      row.classList.add('ct-active');
+      var targetAid = item.id;
+      var funcName = item.name || '';
+      // Collect all attrs to highlight: the clicked attr + all attrs in its detail node
+      var allAids = [targetAid];
+      var nodeAttrs = findNodeAttrsByFuncName(funcName);
+      if (nodeAttrs.length > 0) allAids = allAids.concat(nodeAttrs);
+      // Find the first attr that exists for scrolling
+      var scrollTarget = targetAid;
+      if (nodeAttrs.length > 0 && attrElements[nodeAttrs[0]]) scrollTarget = nodeAttrs[0];
+
+      if (attrElements[targetAid] || nodeAttrs.length > 0) {
+        clearHighlight();
+        selectedAttr = allAids;
+        reHighlight();
+        scrollToAttr(scrollTarget);
+        flashAttr(scrollTarget);
+      } else {
+        // Try to find in other diagrams
+        var found = findAttrInDiagrams(targetAid);
+        if (found) {
+          var savedChain = dpBody.innerHTML;
+          var savedTitle = dpTitle.textContent;
+          switchDiagram(found.diagram);
+          setTimeout(function() {
+            var nodeAttrs2 = findNodeAttrsByFuncName(funcName);
+            var allAids2 = [targetAid].concat(nodeAttrs2);
+            var scrollTarget2 = nodeAttrs2.length > 0 && attrElements[nodeAttrs2[0]] ? nodeAttrs2[0] : targetAid;
+            clearHighlight();
+            selectedAttr = allAids2;
+            reHighlight();
+            scrollToAttr(scrollTarget2);
+            flashAttr(scrollTarget2);
+            // Reopen detail panel with saved content
+            dpTitle.textContent = savedTitle;
+            dpBody.innerHTML = savedChain;
+            detailPanel.classList.add('open');
+            rebindCallTreeEvents(dpBody);
+          }, 150);
+        }
+      }
+    });
+
+    nodeDiv.appendChild(row);
+
+    // Description block (desc field — explains what the function does)
+    if (item.desc) {
+      var descDiv = document.createElement('div');
+      descDiv.className = 'ct-desc';
+      var descSpan = document.createElement('span');
+      descSpan.className = 'ct-desc-text';
+      descSpan.textContent = item.desc;
+      descDiv.appendChild(descSpan);
+      nodeDiv.appendChild(descDiv);
+    }
+
+    // Sig line (legacy support)
+    if (item.sig && !item.desc) {
+      var sigDiv = document.createElement('div');
+      sigDiv.className = 'ct-node';
+      sigDiv.style.paddingLeft = '32px';
+      var sigSpan = document.createElement('span');
+      sigSpan.className = 'ct-sig';
+      sigSpan.textContent = item.sig;
+      sigDiv.appendChild(sigSpan);
+      nodeDiv.appendChild(sigDiv);
+    }
+
+    // Children
+    if (hasChildren) {
+      var childrenDiv = document.createElement('div');
+      childrenDiv.className = 'ct-children';
+      renderCallTree(childrenDiv, item.calls, currentAid);
+      nodeDiv.appendChild(childrenDiv);
+    }
+
+    container.appendChild(nodeDiv);
+  });
+}
+
+function scrollToAttr(aid) {
+  var el = attrElements[aid];
+  if (!el) return;
+  var nodeEl = el.closest('.node');
+  var nid = nodeEl.dataset.nodeId;
+  var pos = nodePositions[nid];
+  var vw = viewport.clientWidth, vh = viewport.clientHeight;
+  panX = vw / 2 - (pos.x + nodeEl.offsetWidth / 2) * scale;
+  panY = vh / 2 - (pos.y + nodeEl.offsetHeight / 2) * scale;
+  applyTransform();
+}
+
+function closeDetailPanel() {
+  detailPanel.classList.remove('open');
+  clearHighlight();
+}
+
+// FIELD DETAIL PANEL — show datatype field computation process
+function openFieldDetailPanel(aid) {
+  var detail = attrFieldDetailMap[aid];
+  if (!detail) return;
+  dpTitle.textContent = detail.field + ' — Computation';
+  dpBody.innerHTML = '';
+  var container = document.createElement('div');
+  container.className = 'fd-container';
+  // Header
+  var header = document.createElement('div');
+  header.className = 'fd-header';
+  header.innerHTML = '<span class="fd-field-name">' + detail.field + '</span><span class="fd-field-type">' + detail.type + '</span>';
+  container.appendChild(header);
+  // Summary
+  var summary = document.createElement('div');
+  summary.className = 'fd-summary';
+  summary.textContent = detail.summary;
+  container.appendChild(summary);
+  // Sources (per mode)
+  (detail.sources || []).forEach(function(src) {
+    var modeDiv = document.createElement('div');
+    modeDiv.className = 'fd-mode';
+    var modeHeader = document.createElement('div');
+    modeHeader.className = 'fd-mode-header';
+    modeHeader.innerHTML = '<span class="fd-mode-badge">' + src.mode + '</span><span class="fd-mode-fn">' + src.fn + '</span>';
+    modeDiv.appendChild(modeHeader);
+    var stepsList = document.createElement('ol');
+    stepsList.className = 'fd-steps';
+    (src.steps || []).forEach(function(step) {
+      var li = document.createElement('li');
+      li.className = 'fd-step';
+      // Highlight code-like fragments
+      li.innerHTML = step.replace(/(\w+\([^)]*\))/g, '<code>$1</code>')
+                         .replace(/([\w.]+\[\w+\])/g, '<code>$1</code>');
+      stepsList.appendChild(li);
+    });
+    modeDiv.appendChild(stepsList);
+    container.appendChild(modeDiv);
+  });
+  dpBody.appendChild(container);
+  detailPanel.classList.add('open');
+  // Highlight the attr
+  clearHighlight();
+  selectedAttr = aid;
+  reHighlight();
+}
+
+// Flash highlight animation for an attr element
+function flashAttr(aid) {
+  var el = attrElements[aid];
+  if (!el) return;
+  el.style.transition = 'box-shadow 0.3s ease';
+  el.style.boxShadow = '0 0 12px 3px rgba(137,180,250,0.7)';
+  setTimeout(function() {
+    el.style.boxShadow = '0 0 8px 2px rgba(137,180,250,0.4)';
+    setTimeout(function() {
+      el.style.boxShadow = '';
+      el.style.transition = '';
+    }, 600);
+  }, 400);
+}
+
+// Find an attr ID in any diagram (for cross-diagram navigation)
+function findAttrInDiagrams(aid) {
+  for (var i = 0; i < diagKeys.length; i++) {
+    var key = diagKeys[i];
+    var d = DIAGRAMS[key];
+    var nodes = d.NODES || [];
+    for (var j = 0; j < nodes.length; j++) {
+      var secs = nodes[j].sections || [];
+      for (var s = 0; s < secs.length; s++) {
+        var attrs = secs[s].attrs || [];
+        for (var a = 0; a < attrs.length; a++) {
+          if (attrs[a].id === aid) return { diagram: key, nodeId: nodes[j].id };
+          var children = attrs[a].children || [];
+          for (var c = 0; c < children.length; c++) {
+            if (children[c].id === aid) return { diagram: key, nodeId: nodes[j].id };
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// Rebind call tree click events after innerHTML replacement
+function rebindCallTreeEvents(container) {
+  container.querySelectorAll('.ct-node.ct-clickable').forEach(function(row) {
+    var aid = row.dataset.ctAid;
+    var funcName = row.dataset.ctName || '';
+    if (!aid) return;
+    row.addEventListener('click', function(e) {
+      if (e.target.closest('.ct-toggle')) return;
+      container.querySelectorAll('.ct-node.ct-active').forEach(function(el) { el.classList.remove('ct-active'); });
+      row.classList.add('ct-active');
+      var nodeAttrs = findNodeAttrsByFuncName(funcName);
+      var allAids = [aid].concat(nodeAttrs);
+      var scrollTarget = nodeAttrs.length > 0 && attrElements[nodeAttrs[0]] ? nodeAttrs[0] : aid;
+
+      if (attrElements[aid] || nodeAttrs.length > 0) {
+        clearHighlight();
+        selectedAttr = allAids;
+        reHighlight();
+        scrollToAttr(scrollTarget);
+        flashAttr(scrollTarget);
+      } else {
+        var found = findAttrInDiagrams(aid);
+        if (found) {
+          var savedChain = container.innerHTML;
+          var savedTitle = dpTitle.textContent;
+          switchDiagram(found.diagram);
+          setTimeout(function() {
+            var nodeAttrs2 = findNodeAttrsByFuncName(funcName);
+            var allAids2 = [aid].concat(nodeAttrs2);
+            var scrollTarget2 = nodeAttrs2.length > 0 && attrElements[nodeAttrs2[0]] ? nodeAttrs2[0] : aid;
+            clearHighlight();
+            selectedAttr = allAids2;
+            reHighlight();
+            scrollToAttr(scrollTarget2);
+            flashAttr(scrollTarget2);
+            dpTitle.textContent = savedTitle;
+            dpBody.innerHTML = savedChain;
+            detailPanel.classList.add('open');
+            rebindCallTreeEvents(dpBody);
+          }, 150);
+        }
+      }
+    });
+  });
+  // Rebind toggle events
+  container.querySelectorAll('.ct-toggle').forEach(function(toggle) {
+    toggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var nodeDiv = toggle.closest('.ct-node').parentElement;
+      var childDiv = nodeDiv ? nodeDiv.querySelector('.ct-children') : null;
+      if (childDiv) {
+        var collapsed = childDiv.classList.toggle('collapsed');
+        toggle.style.transform = collapsed ? 'rotate(0deg)' : 'rotate(90deg)';
+      }
+    });
+  });
+}
+
+document.getElementById('dpClose').addEventListener('click', closeDetailPanel);
+
+// NODE DRAGGING
+canvas.addEventListener('mousedown', function(e) {
+  var header = e.target.closest('[data-drag]');
+  if (!header) return;
+  e.preventDefault(); e.stopPropagation();
+  var nid = header.dataset.drag, el = nodeElements[nid], pos = nodePositions[nid];
+  el.classList.add('dragging');
+  dragState = {nid: nid, startMouseX: e.clientX, startMouseY: e.clientY, startNodeX: pos.x, startNodeY: pos.y};
+});
+
+// GROUP DRAGGING
+function findGroupByElement(el) {
+  var bgEl = el.closest('.group-bg'), lblEl = el.closest('.group-label');
+  var target = bgEl || lblEl;
+  if (!target) return null;
+  var gid = target.dataset.groupId;
+  return GROUPS.find(function(g) { return g.id === gid; }) || null;
+}
+
+canvas.addEventListener('mousedown', function(e) {
+  if (dragState) return;
+  var group = findGroupByElement(e.target);
+  if (!group) return;
+  if (e.target.closest('.node')) return;
+  e.preventDefault(); e.stopPropagation();
+  var startPositions = {};
+  group.nodes.forEach(function(nid) {
+    var pos = nodePositions[nid];
+    if (pos) startPositions[nid] = {x: pos.x, y: pos.y};
+  });
+  var bg = groupElements[group.id].bg;
+  bg.classList.add('group-dragging');
+  groupDragState = {groupId: group.id, nodeIds: group.nodes, startMouseX: e.clientX, startMouseY: e.clientY, startPositions: startPositions};
+});
+
+window.addEventListener('mousemove', function(e) {
+  if (dragState) {
+    var dx = (e.clientX - dragState.startMouseX) / scale, dy = (e.clientY - dragState.startMouseY) / scale;
+    var newX = dragState.startNodeX + dx, newY = dragState.startNodeY + dy;
+    nodePositions[dragState.nid] = {x: newX, y: newY};
+    var el = nodeElements[dragState.nid];
+    el.style.left = newX + 'px'; el.style.top = newY + 'px';
+    redrawConnections(); updateGroupBounds();
+    if (selectedAttr) reHighlight();
+    return;
+  }
+  if (groupDragState) {
+    var dx = (e.clientX - groupDragState.startMouseX) / scale, dy = (e.clientY - groupDragState.startMouseY) / scale;
+    groupDragState.nodeIds.forEach(function(nid) {
+      var sp = groupDragState.startPositions[nid]; if (!sp) return;
+      var newX = sp.x + dx, newY = sp.y + dy;
+      nodePositions[nid] = {x: newX, y: newY};
+      var el = nodeElements[nid];
+      el.style.left = newX + 'px'; el.style.top = newY + 'px';
+    });
+    redrawConnections(); updateGroupBounds();
+    if (selectedAttr) reHighlight();
+    return;
+  }
+});
+
+window.addEventListener('mouseup', function() {
+  if (dragState) {
+    nodeElements[dragState.nid].classList.remove('dragging');
+    dragState = null; savePositions();
+  }
+  if (groupDragState) {
+    groupElements[groupDragState.groupId].bg.classList.remove('group-dragging');
+    groupDragState = null; savePositions();
+  }
+});
+
+// ATTR CLICK — open call chain or highlight
+canvas.addEventListener('click', function(e) {
+  if (dragState) return;
+  if (e.target.closest('[data-drag]')) return;
+  if (e.target.closest('.attr-toggle')) return;
+  var attrEl = e.target.closest('[data-aid]');
+  if (!attrEl) {
+    clearHighlight();
+    return;
+  }
+  var aid = attrEl.dataset.aid;
+  // If has call chain data, open detail panel
+  if (attrCallChainMap[aid]) {
+    openDetailPanel(aid);
+    return;
+  }
+  // If has field detail data, open field detail panel
+  if (attrFieldDetailMap[aid]) {
+    openFieldDetailPanel(aid);
+    return;
+  }
+  // Otherwise highlight connections
+  clearHighlight();
+  if (selectedAttr === aid) { selectedAttr = null; return; }
+  selectedAttr = aid; reHighlight();
+});
+
+function reHighlight() {
+  if (!selectedAttr) return;
+  var primaryAids = Array.isArray(selectedAttr) ? selectedAttr : [selectedAttr];
+  var relatedAttrs = new Set(primaryAids), relatedIdxs = new Set(), relatedNodes = new Set();
+  connData.forEach(function(c) {
+    if (relatedAttrs.has(c.srcId) || relatedAttrs.has(c.tgtId)) { relatedIdxs.add(c.idx); relatedAttrs.add(c.srcId); relatedAttrs.add(c.tgtId); }
+  });
+  relatedAttrs.forEach(function(a) {
+    var el = attrElements[a];
+    if (el) { el.classList.add('hl'); var nd = el.closest('.node'); if (nd) relatedNodes.add(nd.dataset.nodeId); }
+  });
+  connData.forEach(function(c) {
+    if (relatedIdxs.has(c.idx)) { c.path.classList.add('hl'); c.path.classList.remove('dim'); }
+    else { c.path.classList.add('dim'); c.path.classList.remove('hl'); }
+  });
+  Object.values(nodeElements).forEach(function(n) { if (!relatedNodes.has(n.dataset.nodeId)) n.classList.add('dim'); });
+  GROUPS.forEach(function(g) {
+    var ge = groupElements[g.id]; if (!ge) return;
+    var hasRelated = ge.nodeIds.some(function(nid) { return relatedNodes.has(nid); });
+    ge.bg.classList.toggle('dim', !hasRelated); ge.lbl.classList.toggle('dim', !hasRelated);
+  });
+}
+
+// Find the detail node whose label matches a function name, return all attr IDs in that node.
+// Also find individual attrs whose name matches the function name.
+function findNodeAttrsByFuncName(funcName) {
+  var cleanName = funcName.replace(/^→\s*/, '').replace(/^[\w.]+\./, '').replace(/\(\)$/, '').trim();
+  if (!cleanName) return [];
+  var result = [];
+  var matchedNodeIds = new Set();
+  // First pass: match node labels → include all attrs from that node
+  NODES.forEach(function(n) {
+    var nodeLabel = (n.label || '').replace(/\(\)$/, '').trim();
+    if (nodeLabel === cleanName || nodeLabel.indexOf(cleanName) !== -1) {
+      matchedNodeIds.add(n.id);
+      (n.sections || []).forEach(function(sec) {
+        (sec.attrs || []).forEach(function(a) {
+          result.push(a.id);
+          if (a.children) a.children.forEach(function(ch) { result.push(ch.id); });
+        });
+      });
+    }
+  });
+  // Second pass: match individual attr names (for sub-functions inside nodes)
+  NODES.forEach(function(n) {
+    if (matchedNodeIds.has(n.id)) return;
+    (n.sections || []).forEach(function(sec) {
+      (sec.attrs || []).forEach(function(a) {
+        var attrName = (a.name || '').replace(/^→\s*/, '').replace(/\(\)$/, '').trim();
+        if (attrName === cleanName) result.push(a.id);
+        if (a.children) {
+          a.children.forEach(function(ch) {
+            var chName = (ch.name || '').replace(/^→\s*/, '').replace(/\(\)$/, '').trim();
+            if (chName === cleanName) result.push(ch.id);
+          });
+        }
+      });
+    });
+  });
+  return result;
+}
+
+function clearHighlight() {
+  selectedAttr = null;
+  document.querySelectorAll('.attr.hl').forEach(function(a) { a.classList.remove('hl'); });
+  document.querySelectorAll('.node.dim').forEach(function(n) { n.classList.remove('dim'); });
+  document.querySelectorAll('.group-bg.dim').forEach(function(g) { g.classList.remove('dim'); });
+  document.querySelectorAll('.group-label.dim').forEach(function(g) { g.classList.remove('dim'); });
+  connData.forEach(function(c) { c.path.classList.remove('hl'); c.path.classList.remove('dim'); });
+}
+
+// PAN & ZOOM
+function applyTransform() {
+  canvas.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + scale + ')';
+  document.getElementById('zoomInfo').textContent = Math.round(scale * 100) + '%';
+}
+
+viewport.addEventListener('mousedown', function(e) {
+  if (e.target.closest('[data-drag]') || e.target.closest('[data-aid]')) return;
+  if (e.button === 1 || (e.button === 0 && spaceHeld) || e.button === 0) {
+    if (e.button === 0 && !spaceHeld && e.target.closest('.node')) return;
+    isPanning = true; panMoved = false;
+    panStart = {x: e.clientX, y: e.clientY, px: panX, py: panY};
+    viewport.classList.add('panning'); e.preventDefault();
+  }
+});
+
+window.addEventListener('mousemove', function(e) {
+  if (!isPanning) return;
+  var dx = e.clientX - panStart.x, dy = e.clientY - panStart.y;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) panMoved = true;
+  panX = panStart.px + dx; panY = panStart.py + dy; applyTransform();
+});
+
+window.addEventListener('mouseup', function() {
+  if (isPanning) {
+    isPanning = false; viewport.classList.remove('panning');
+  }
+});
+
+// Click on blank area to clear highlight (but keep detail panel open)
+viewport.addEventListener('click', function(e) {
+  if (panMoved) return; // ignore drag-pan
+  if (e.target.closest('.node') || e.target.closest('.group-bg') || e.target.closest('.group-label')) return;
+  clearHighlight();
+});
+
+window.addEventListener('keydown', function(e) { if (e.code === 'Space') { spaceHeld = true; e.preventDefault(); } });
+window.addEventListener('keyup', function(e) { if (e.code === 'Space') spaceHeld = false; });
+
+viewport.addEventListener('wheel', function(e) {
+  e.preventDefault();
+  var rect = viewport.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  var oldScale = scale, delta = e.deltaY < 0 ? 1.08 : 1 / 1.08;
+  scale = Math.max(0.15, Math.min(3, scale * delta));
+  panX = mx - (mx - panX) * (scale / oldScale); panY = my - (my - panY) * (scale / oldScale);
+  applyTransform();
+}, {passive: false});
+
+document.getElementById('zoomIn').addEventListener('click', function() {
+  var cx = viewport.clientWidth / 2, cy = viewport.clientHeight / 2, oldScale = scale;
+  scale = Math.min(3, scale * 1.2);
+  panX = cx - (cx - panX) * (scale / oldScale); panY = cy - (cy - panY) * (scale / oldScale); applyTransform();
+});
+document.getElementById('zoomOut').addEventListener('click', function() {
+  var cx = viewport.clientWidth / 2, cy = viewport.clientHeight / 2, oldScale = scale;
+  scale = Math.max(0.15, scale / 1.2);
+  panX = cx - (cx - panX) * (scale / oldScale); panY = cy - (cy - panY) * (scale / oldScale); applyTransform();
+});
+document.getElementById('zoomReset').addEventListener('click', function() {
+  scale = 1; panX = 0; panY = 0; applyTransform();
+});
+
+function fitToView() {
+  var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  Object.keys(nodeElements).forEach(function(nid) {
+    var p = nodePositions[nid], el = nodeElements[nid];
+    minX = Math.min(minX, p.x); minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x + el.offsetWidth); maxY = Math.max(maxY, p.y + el.offsetHeight);
+  });
+  var cw = maxX - minX + 80, ch = maxY - minY + 80;
+  var vw = viewport.clientWidth, vh = viewport.clientHeight - 80;
+  scale = Math.min(1, Math.min(vw / cw, vh / ch));
+  panX = (vw - cw * scale) / 2 - minX * scale + 40 * scale;
+  panY = (vh - ch * scale) / 2 - minY * scale + 80 + 40 * scale;
+  applyTransform();
+  svg.setAttribute('width', cw + 200); svg.setAttribute('height', ch + 200);
+}
+
+document.getElementById('zoomFit').addEventListener('click', fitToView);
+document.getElementById('resetLayoutBtn').addEventListener('click', function(e) {
+  e.preventDefault();
+  if (currentDiagramKey) {
+    var key = currentDiagramKey;
+    localStorage.removeItem(storageKey(key));
+    currentDiagramKey = null;
+    switchDiagram(key);
+  }
+});
+viewport.addEventListener('contextmenu', function(e) { if (e.button === 1) e.preventDefault(); });
+
+// Load first diagram
+switchDiagram(diagKeys[0]);
+
+// ======================== SEARCH ========================
+var searchBox = document.getElementById('searchBox');
+var searchResults = document.getElementById('searchResults');
+var allSearchItems = [];
+
+// Build global search index
+function buildSearchIndex() {
+  allSearchItems = [];
+  diagKeys.forEach(function(key) {
+    var d = DIAGRAMS[key];
+    (d.NODES || []).forEach(function(n) {
+      (n.sections || []).forEach(function(sec) {
+        (sec.attrs || []).forEach(function(a) {
+          allSearchItems.push({ id: a.id, name: a.name, diagram: key, diagramLabel: d.navLabel, nodeLabel: n.label });
+          if (a.children) {
+            a.children.forEach(function(ch) {
+              allSearchItems.push({ id: ch.id, name: ch.name, diagram: key, diagramLabel: d.navLabel, nodeLabel: n.label });
+            });
+          }
+        });
+      });
+    });
+  });
+}
+buildSearchIndex();
+
+searchBox.addEventListener('input', function() {
+  var q = searchBox.value.trim().toLowerCase();
+  searchResults.innerHTML = '';
+  if (!q || q.length < 2) { searchResults.style.display = 'none'; return; }
+  var matches = allSearchItems.filter(function(item) {
+    return item.name.toLowerCase().indexOf(q) !== -1 || item.id.toLowerCase().indexOf(q) !== -1;
+  }).slice(0, 15);
+  if (matches.length === 0) { searchResults.style.display = 'none'; return; }
+  searchResults.style.display = 'block';
+  matches.forEach(function(m) {
+    var div = document.createElement('div');
+    div.className = 'search-result';
+    div.innerHTML = '<span>' + m.name + '</span><span class="sr-module">' + m.diagramLabel + ' → ' + m.nodeLabel + '</span>';
+    div.addEventListener('click', function() {
+      searchResults.style.display = 'none';
+      searchBox.value = '';
+      if (currentDiagramKey !== m.diagram) {
+        switchDiagram(m.diagram);
+        setTimeout(function() {
+          clearHighlight();
+          selectedAttr = m.id;
+          reHighlight();
+          scrollToAttr(m.id);
+        }, 100);
+      } else {
+        clearHighlight();
+        selectedAttr = m.id;
+        reHighlight();
+        scrollToAttr(m.id);
+      }
+    });
+    searchResults.appendChild(div);
+  });
+});
+
+searchBox.addEventListener('blur', function() {
+  setTimeout(function() { searchResults.style.display = 'none'; }, 200);
+});
+
+// Ctrl+K shortcut
+window.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    searchBox.focus();
+    searchBox.select();
+  }
+  if (e.key === 'Escape') {
+    searchResults.style.display = 'none';
+    searchBox.blur();
+  }
+});
+</script>
+</body>
+</html>
