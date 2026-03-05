@@ -4,6 +4,28 @@ An interactive HTML node-graph viewer skill that visualizes codebase structure, 
 
 ![Catppuccin Mocha Theme](https://img.shields.io/badge/theme-Catppuccin%20Mocha-b4befe?style=flat-square) ![Standalone HTML](https://img.shields.io/badge/output-standalone%20HTML-a6e3a1?style=flat-square) ![No Dependencies](https://img.shields.io/badge/dependencies-none-89b4fa?style=flat-square)
 
+## Example — [AuroraView](https://github.com/loonghao/auroraview) Analysis
+
+Below are screenshots from analyzing the [AuroraView](https://github.com/loonghao/auroraview) Rust WebView project:
+
+### Full Call Chain Overview
+
+![AuroraView Full Call Chain](images/auroraview_full_call_chain.jpg)
+
+*Complete `AuroraView::new()` call chain with all modules, IPC handlers, lifecycle management, and WebView builder — right-side panel shows the interactive call chain detail.*
+
+### Function Signature Tooltips
+
+![AuroraView Signature Tooltip](images/auroraview_signature_tooltip.jpg)
+
+*Hover over any function to see its full signature and source location. Click to highlight all connected relationships.*
+
+### Entry Point Tracing
+
+![AuroraView Entry Point Tracing](images/auroraview_entry_tracing.jpg)
+
+*Click `show_embedded()` to trace the DCC embedded entry flow — the viewer highlights the active path and dims unrelated nodes.*
+
 ## Features
 
 - **Interactive Node Graph** — Draggable nodes with bezier-curve connections, pan & zoom
