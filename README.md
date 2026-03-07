@@ -29,14 +29,17 @@ Below are screenshots from analyzing the [AuroraView](https://github.com/loongha
 ## Features
 
 - **Interactive Node Graph** — Draggable nodes with bezier-curve connections, pan & zoom
-- **Call Chain Detail Panel** — Click entry-point functions to explore the complete call tree in a right-side panel
+- **Call Chain Detail Panel** — Click entry-point functions to explore the complete call tree in a right-side panel; each item shows a description explaining what the function does
 - **Global Search (Ctrl+K)** — Fuzzy search across ALL diagram pages with cross-diagram navigation
 - **Multi-Diagram Support** — Organize views by entry-point call chains, UI layers, data types, and overview
 - **Smart Highlighting** — Click any function to highlight its node + all connected relationships; dim everything else
 - **Collapsible Children** — Sub-functions collapse/expand with connection redirect to parent
-- **Signature Tooltips** — Hover functions to see full signatures, descriptions, and I/O
-- **Position Persistence** — Node positions saved to localStorage per diagram
-- **Catppuccin Mocha Dark Theme** — Beautiful dark color scheme with 12 semantic color classes
+- **Signature Tooltips** — Hover functions to see full signatures, descriptions, detailed explanations, and I/O
+- **Click to Copy** — Click any function attr to copy the function name to clipboard with toast notification
+- **Undo Layout Moves (Ctrl+Z)** — Undo the last node/group drag operation (up to 50 steps)
+- **Position Persistence** — Node positions saved to localStorage per diagram; "Reset Layout" restores defaults
+- **Catppuccin Mocha Dark Theme** — Beautiful dark color scheme with type-based semantic colors
+- **Group Boxes** — Dashed-border groups with auto-sizing to enclose member nodes; draggable as a unit
 
 ## How It Works
 
@@ -58,13 +61,20 @@ Copy the entire repository into your AI agent's skills directory:
 ```
 <project>/.skills/code_flow_graph/
   SKILL.md
-  assets/
+  example/
     code_flow_graph.html
+    code_flow_graph_data.js
   references/
     data_format.md
 ```
 
 Then ask your AI: *"Visualize the code architecture of this project"* or *"Generate a code graph for this module"*.
+
+The AI will:
+1. Analyze the project structure and discover entry points
+2. Generate an Overview diagram immediately (no scoping questions)
+3. Offer deep-dive options for specific call chains, UI layers, or data types
+4. Incrementally append new diagram pages as you select options
 
 ### Standalone Usage
 
@@ -78,11 +88,23 @@ You can also use the viewer independently:
 
 See [`references/data_format.md`](references/data_format.md) for the complete data format specification.
 
-## Data Type Flow (Datatype Diagram)
+## Diagram Types
 
-The viewer supports a dedicated **datatype diagram** that traces how data structures flow through the codebase — from definition to transformation to consumption.
+### Overview Diagram
 
-Each node in the datatype diagram represents a data class or type definition (peach color, auto-assigned by `type: 'data'`). Connections show how data flows between components:
+A **module-level dependency graph** showing one node per major module/class, entry points highlighted with `type: 'entry'`, cross-module connections, and package groups. Always generated first.
+
+### Call-Chain Diagram
+
+Traces the **complete call chain** of one entry function. Nodes are organized left-to-right following execution order. Each function attr includes `sig` (signature tooltip), `desc` (one-line summary), and `detail` (multi-line explanation). The entry function attr includes a `callChain` array for the interactive detail panel.
+
+### UI Signal/Event Diagram
+
+For UI projects (Qt, React, Web, etc.). Uses `widget` type nodes with sections for Widgets, Event Handlers, and Slots. Dashed pink connections link event handlers to business logic.
+
+### Data Type Diagram
+
+Each dataclass/type definition → node with `type: 'data'` (peach color). Fields listed as attrs with type in the `val` field. Connections show how data flows between components:
 
 | Connection Color | Meaning |
 |-----------------|---------|
@@ -90,77 +112,61 @@ Each node in the datatype diagram represents a data class or type definition (pe
 | 🟢 Green | Data constructed or returned by a function |
 | 🟠 Peach | Data consumed by an external dependency |
 
-A typical datatype flow looks like:
-
-```
-[RawInput] ──construct──▶ [ParsedData] ──transform──▶ [ModelInput] ──consume──▶ [ExternalAPI]
-```
-
-To include a datatype diagram in your `code_flow_graph_data.js`:
-
-```js
-DIAGRAMS.datatypes = {
-  title: 'Data Type Flow',
-  sub: 'How data structures move through the system',
-  navLabel: 'DataTypes',
-  navSub: 'data flow',
-  NODES: [
-    {
-      id: 'UserInput', label: 'UserInput', type: 'class',
-      x: 30, y: 60, w: 240,
-      sections: [{ title: 'Fields', attrs: [
-        { id: 'UserInput.query', name: 'query: str' },
-        { id: 'UserInput.lang',  name: 'lang: str' },
-      ]}]
-    },
-    {
-      id: 'ParsedRequest', label: 'ParsedRequest', type: 'class',
-      x: 340, y: 60, w: 260,
-      sections: [{ title: 'Fields', attrs: [
-        { id: 'ParsedRequest.tokens', name: 'tokens: List[str]' },
-        { id: 'ParsedRequest.intent', name: 'intent: str' },
-      ]}]
-    },
-  ],
-  CONNECTIONS: [
-    ['UserInput.query', 'ParsedRequest.tokens', '#89b4fa', false],
-  ],
-};
-```
-
 ## Color Scheme
 
 Uses [Catppuccin Mocha](https://github.com/catppuccin/catppuccin) palette. Color is **automatically assigned by node type**:
 
-| Type | Color |
-|------|-------|
-| `entry` | 🟡 Yellow |
-| `class` | 🔵 Blue |
-| `module` | 🟢 Green |
-| `function` | 🟣 Mauve |
-| `data` | 🟠 Peach |
-| `widget` | 🩷 Flamingo |
-| `slots` | 🩷 Pink |
+| Type | Color | Badge |
+|------|-------|-------|
+| `entry` | 🟡 Yellow (`#f9e2af`) | ENTRY |
+| `class` | 🔵 Blue (`#89b4fa`) | CLASS |
+| `module` | 🟢 Green (`#a6e3a1`) | MODULE |
+| `function` | 🟣 Mauve (`#cba6f7`) | FUNC |
+| `data` | 🟠 Peach (`#fab387`) | DATA |
+| `widget` / `QDialog` | 💎 Sapphire (`#74c7ec`) | UI CLASS |
+| `slots` | 🩷 Pink (`#f5c2e7`) | SLOTS |
 
 > Nodes with `external: true` are rendered with dashed borders and an `EXT` tag to indicate third-party dependencies.
 
 ## Connection Types
 
+All connections render with a **gradient stroke** from transparent at source to full opacity at target, indicating flow direction.
+
 | Color | Style | Meaning |
 |-------|-------|---------|
-| 🟢 Green | Solid | Direct function call |
-| 🔴 Red | Solid | Inheritance / override |
-| 🔵 Blue | Solid | Data flow |
-| 🩷 Pink | Dashed | Signal / event / callback |
-| 🟠 Peach | Solid | External dependency |
+| 🟢 Green (`#a6e3a1`) | Solid | Direct function call |
+| 🔴 Red (`#f38ba8`) | Solid | Inheritance / override |
+| 🔵 Blue (`#89b4fa`) | Solid | Data flow / return value |
+| 🩷 Pink (`#f5c2e7`) | Dashed | Signal / event / callback |
+| 🟠 Peach (`#fab387`) | Solid | External dependency call |
+| ⚫ Overlay (`#6c7086`) | Solid | Weak reference / optional |
 
 ## Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
 | `Ctrl+K` | Open global search |
+| `Ctrl+Z` | Undo last layout move (up to 50 steps) |
+| `Space + Drag` | Pan the viewport |
+| `Scroll` | Zoom in / out |
 | `Escape` | Close search / detail panel |
+| Click function | Copy function name + highlight connections |
 | Click blank area | Clear all highlights |
+
+## Element Mapping
+
+| Code Concept | Graph Element |
+|---|---|
+| Entry function | NODE (`type: 'entry'`) — ENTRY badge |
+| Class / core object | NODE (`type: 'class'`) — CLASS badge |
+| Module / package | NODE (`type: 'module'`) — MODULE badge |
+| Function group / utility | NODE (`type: 'function'`) — FUNC badge |
+| Data type / dataclass | NODE (`type: 'data'`) — DATA badge |
+| UI widget / dialog | NODE (`type: 'widget'`) — UI CLASS badge |
+| Small helper called once | attr with `children` inside parent node |
+| Third-party dependency | NODE with `external: true` — dashed border + EXT tag |
+| Direct function call | CONNECTION (solid, gradient toward callee) |
+| Signal / event / callback | CONNECTION (dashed, gradient toward target) |
 
 ## License
 
