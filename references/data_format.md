@@ -227,4 +227,169 @@ DIAGRAMS.core = {
     ]},
   ],
   CONNECTIONS: [
-    ['Engine._init', 'Logger.log', '#a6e3a1',
+    ['Engine._init', 'Logger.log', '#a6e3a1', false],
+  ],
+  GROUPS: [
+    { id: 'g-core', label: 'Core', nodes: ['Engine', 'Logger'], color: '#89b4fa', bg: 'rgba(137,180,250,0.04)' },
+  ],
+};
+```
+
+---
+
+## UI_LAYOUT_VIEWS (Widget Hierarchy Visualization)
+
+An optional global variable that enables the **UI Layout Viewer** mode. When defined in `code_flow_graph_data.js`, the sidebar gains a "🖼️ UI 布局" separator followed by nav items for each layout view. Clicking a layout view switches from the node-graph mode to an interactive nested widget-box tree.
+
+### Top-level Structure
+
+```js
+var UI_LAYOUT_VIEWS = {};
+
+UI_LAYOUT_VIEWS.main_window = {
+  title: 'MainWindow — 完整布局',              // header title
+  sub: 'path/to/main_window.py — QMainWindow', // subtitle
+  navLabel: '🏠 MainWindow',                   // sidebar label
+  navSub: '主窗口完整布局',                      // sidebar sublabel
+  legend: [                                     // optional custom legend items
+    { color: 'blue', label: '容器 / 框架' },
+    { color: 'green', label: '功能页面' },
+  ],
+  root: { /* widget tree root node — see below */ },
+};
+```
+
+### Widget Tree Node Format
+
+Each node in the widget tree represents a UI widget/component:
+
+```js
+{
+  name: 'widget_name',       // Object name or display text (e.g., '"文件"')
+  obj: 'QWidget',            // Qt class name or framework component type
+  color: 'blue',             // Catppuccin color key (see Color Keys below)
+  badge: 'FRAME',            // Short badge text on header (WINDOW/FRAME/PANEL/BTN/TAB/STACK/WIDGET/LIST/ITEM/MENU/BAR/etc.)
+  layout: 'v',               // Layout type: 'h' | 'v' | 'hsplit' | 'stack' | 'tab'
+  note: 'additional info',   // Shown in hover tooltip (supports \\n for newlines)
+  flex: 1,                   // CSS flex value for proportional sizing
+  w: 200,                    // Fixed width in pixels
+  h: 40,                     // Fixed height in pixels
+  splitWeight: 600,          // Weight for hsplit siblings (QSplitter stretch factor)
+  leaf: true,                // Terminal widget, no children
+  placeholder: 'description',// Placeholder text for stub/empty pages
+  spacer: true,              // Stretch spacer element (use with name: 'stretch')
+  children: [ /* nested widget nodes */ ],
+
+  // For layout: 'stack' (QStackedWidget):
+  stackTabs: [
+    { label: '[0] Page Name', key: 'page_key', active: true },
+    { label: '[1] Other Page', key: 'other_key' },
+  ],
+  stackPages: {
+    page_key: { /* widget tree node for this page */ },
+    other_key: { /* widget tree node for this page */ },
+  },
+
+  // For layout: 'tab' (QTabWidget / MTabWidget):
+  tabTabs: [
+    { label: 'Tab 1', key: 't1', active: true },
+    { label: 'Tab 2', key: 't2' },
+  ],
+  tabPages: {
+    t1: { /* widget tree node for this tab */ },
+    t2: { /* widget tree node for this tab */ },
+  },
+}
+```
+
+### Layout Types
+
+| Value | Widget | Behavior |
+|-------|--------|----------|
+| `'v'` | QVBoxLayout | Children stacked vertically |
+| `'h'` | QHBoxLayout | Children placed horizontally |
+| `'hsplit'` | QSplitter (horizontal) | Children placed horizontally with draggable splitter handles between them |
+| `'stack'` | QStackedWidget | One page visible at a time, controlled by `stackTabs` buttons |
+| `'tab'` | QTabWidget | Tab bar at top, one page visible per tab |
+
+### Color Keys
+
+Assign colors semantically based on widget purpose:
+
+| Color Key | Hex | Recommended Usage |
+|-----------|-----|-------------------|
+| `blue` | `#89b4fa` | Main containers, frames, windows |
+| `sapphire` | `#74c7ec` | Tab widgets, secondary containers |
+| `green` | `#a6e3a1` | Functional area A (e.g., face sculpting) |
+| `peach` | `#fab387` | Functional area B (e.g., body workshop) |
+| `mauve` | `#cba6f7` | Lists, sidebars |
+| `red` | `#f38ba8` | Floating overlays, error states |
+| `pink` | `#f5c2e7` | Functional area C (e.g., material lab) |
+| `yellow` | `#f9e2af` | Menus, toolbars, special controls |
+| `teal` | `#94e2d5` | Functional widgets, utility panels |
+| `flamingo` | `#f2cdcd` | Functional area D (e.g., hair studio) |
+| `lavender` | `#b4befe` | QStackedWidget containers |
+| `rosewater` | `#f5e0dc` | Decorative, soft accent |
+| `overlay` | `#313244` | Basic/leaf controls, minimal widgets |
+
+### Special Features
+
+- **Resize handles** — Each rendered widget box has three resize handles (right edge, bottom edge, bottom-right corner) that appear on hover. Users can drag to resize any widget box.
+- **Ctrl+Z undo** — Resize operations are pushed to an undo stack. Press Ctrl+Z to revert the last resize. The undo stack is separate from the node-graph undo stack and is cleared when switching views.
+- **Hover tooltips** — Hovering a widget box shows: badge type, object class (`obj`), name, note (if any), and size constraints (`w`, `h`, `splitWeight`).
+- **`\\n` in names** — For vertical button text (e.g., Chinese characters stacked vertically), use `\\n` in the name string. The renderer converts these to actual newlines via CSS `white-space: pre-line`.
+- **Spacer elements** — Use `{ spacer: true, name: 'stretch' }` to insert a flexible stretch spacer in horizontal or vertical layouts.
+- **Splitter handles** — In `hsplit` layout, visual splitter handles (8px vertical bars with repeating pattern) are automatically inserted between children.
+
+### Minimal Example
+
+```js
+var UI_LAYOUT_VIEWS = {};
+
+UI_LAYOUT_VIEWS.main_window = {
+  title: 'MainWindow — Layout',
+  sub: 'main_window.py — QMainWindow',
+  navLabel: '🏠 MainWindow',
+  navSub: 'Main window layout',
+  root: {
+    name: 'MainWindow', obj: 'QMainWindow', color: 'blue',
+    badge: 'WINDOW', layout: 'v',
+    children: [
+      {
+        name: 'menu_bar', obj: 'QMenuBar', color: 'yellow', badge: 'MENU',
+        layout: 'h', h: 30,
+        children: [
+          { name: '"File"', obj: 'QMenu', color: 'overlay', badge: 'MENU', leaf: true },
+          { name: '"Edit"', obj: 'QMenu', color: 'overlay', badge: 'MENU', leaf: true },
+        ]
+      },
+      {
+        name: 'central', obj: 'QWidget', color: 'blue', badge: 'FRAME',
+        layout: 'h', flex: 1,
+        children: [
+          {
+            name: 'sidebar', obj: 'QListWidget', color: 'mauve', badge: 'LIST',
+            w: 200, layout: 'v',
+            children: [
+              { name: '"Item 1"', obj: 'QListWidgetItem', color: 'overlay', badge: 'ITEM', leaf: true },
+              { name: '"Item 2"', obj: 'QListWidgetItem', color: 'overlay', badge: 'ITEM', leaf: true },
+            ]
+          },
+          {
+            name: 'content', obj: 'QStackedWidget', color: 'lavender', badge: 'STACK',
+            layout: 'stack', flex: 1,
+            stackTabs: [
+              { label: '[0] Page A', key: 'a', active: true },
+              { label: '[1] Page B', key: 'b' },
+            ],
+            stackPages: {
+              a: { name: 'page_a', obj: 'QWidget', color: 'green', badge: 'VIEW', placeholder: 'Page A content' },
+              b: { name: 'page_b', obj: 'QWidget', color: 'peach', badge: 'VIEW', placeholder: 'Page B content' },
+            },
+          },
+        ]
+      },
+      { name: 'status_bar', obj: 'QStatusBar', color: 'overlay', badge: 'BAR', leaf: true, h: 24 },
+    ]
+  }
+};

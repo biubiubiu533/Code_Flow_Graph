@@ -29,6 +29,7 @@ Below are screenshots from analyzing the [AuroraView](https://github.com/loongha
 ## Features
 
 - **Interactive Node Graph** — Draggable nodes with bezier-curve connections, pan & zoom
+- **UI Layout Visualization** — Interactive widget hierarchy viewer for UI projects (Qt, React, etc.); nested layout boxes with resize handles, Ctrl+Z undo, and hover tooltips showing widget class/properties
 - **Call Chain Detail Panel** — Click entry-point functions to explore the complete call tree in a right-side panel; each item shows a description explaining what the function does
 - **Global Search (Ctrl+K)** — Fuzzy search across ALL diagram pages with cross-diagram navigation
 - **Multi-Diagram Support** — Organize views by entry-point call chains, UI layers, data types, and overview

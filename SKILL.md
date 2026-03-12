@@ -160,11 +160,16 @@ Analyze the discovered entry points and project characteristics to build a **dyn
    - "分析 UI 信号与事件处理链路"
    - "分析 `MainWindow` 的事件绑定和分发逻辑"
 
-3. **Data structure analysis** — If the project defines significant data types:
+3. **UI layout visualization** (UI projects ONLY) — If the project has a UI layer (Qt, React, Web, etc.):
+   - "可视化 UI 界面布局层级"
+   - "生成 `MainWindow` 的 Widget 层级布局图"
+   - This generates `UI_LAYOUT_VIEWS` data in `code_flow_graph_data.js`, rendered as an interactive widget hierarchy tree in the left sidebar under "🖼️ UI 布局" section. Users can resize widget boxes by dragging edges and undo with Ctrl+Z.
+
+4. **Data structure analysis** — If the project defines significant data types:
    - "分析数据结构的组成和传递链路"
    - "分析 `ConfigData` 的生成与变化链路"
 
-4. **Custom analysis** — Always include a free-form option:
+5. **Custom analysis** — Always include a free-form option:
    - "自定义：分析其他函数或模块"
 
 #### Example `ask_followup_question` Call
@@ -179,6 +184,7 @@ ask_followup_question({
       "分析 Pipeline.run() 的完整调用链路",
       "分析 Converter.convert() 的完整调用链路",
       "分析 CLI main() 的命令分发逻辑",
+      "可视化 UI 界面布局层级",
       "分析数据结构的组成和传递链路",
       "自定义：分析其他函数或模块"
     ],
@@ -226,6 +232,68 @@ Each diagram traces the **complete call chain** of one entry function:
 2. Use `widget` type for widget nodes with sections: Widgets, Event Handlers, Slots
 3. Draw dashed pink connections from event handlers to business logic
 
+##### UI Layout Visualization (UI projects only)
+
+Generate `UI_LAYOUT_VIEWS` data in `code_flow_graph_data.js` to create interactive widget hierarchy layout diagrams. These appear in the sidebar under a "🖼️ UI 布局" separator.
+
+1. **Analyze UI source code** — Read the main window and page source files to understand the complete widget tree (parent-child relationships, layout types, sizing policies)
+2. **Generate `UI_LAYOUT_VIEWS` object** — Append a `var UI_LAYOUT_VIEWS = {};` block to `code_flow_graph_data.js` (after the `DIAGRAMS` entries). Each view key maps to a view object:
+
+```js
+var UI_LAYOUT_VIEWS = {};
+UI_LAYOUT_VIEWS.main_window = {
+  title: 'MainWindow — 完整布局',
+  sub: 'path/to/main_window.py — QMainWindow',
+  navLabel: '🏠 MainWindow',
+  navSub: '主窗口完整布局',
+  legend: [ // optional custom legend
+    { color: 'blue', label: '容器 / 框架' },
+    { color: 'green', label: '功能页面' },
+  ],
+  root: { /* widget tree — see below */ }
+};
+```
+
+3. **Widget tree node format**:
+
+```js
+{
+  name: 'widget_name',          // Object name or display text (e.g., '"文件"')
+  obj: 'QWidget',               // Qt class name / description
+  color: 'blue',                // Catppuccin color key (blue/green/peach/mauve/red/pink/yellow/teal/flamingo/lavender/rosewater/sapphire/overlay)
+  badge: 'FRAME',               // Short badge text on header (WINDOW/FRAME/PANEL/BTN/TAB/STACK/WIDGET/etc.)
+  layout: 'v',                  // 'h' (horizontal), 'v' (vertical), 'hsplit' (QSplitter), 'stack' (QStackedWidget), 'tab' (QTabWidget)
+  note: 'additional info',      // Shown in hover tooltip
+  flex: 1,                      // CSS flex value
+  w: 200,                       // Fixed width in px
+  h: 40,                        // Fixed height in px
+  splitWeight: 600,             // Weight for hsplit siblings
+  leaf: true,                   // No children (terminal widget)
+  placeholder: 'description',   // Placeholder text for stub pages
+  spacer: true,                 // Stretch spacer element (use name: 'stretch')
+  children: [ /* nested widgets */ ],
+  // For layout: 'stack':
+  stackTabs: [ { label: '[0] Page', key: 'p0', active: true } ],
+  stackPages: { p0: { /* widget node */ } },
+  // For layout: 'tab':
+  tabTabs: [ { label: 'Tab 1', key: 't1', active: true } ],
+  tabPages: { t1: { /* widget node */ } },
+}
+```
+
+4. **Color coding** — Assign colors semantically:
+   - `blue` / `sapphire` for containers and frameworks
+   - `green` / `peach` / `pink` / `flamingo` / `mauve` for different functional areas
+   - `yellow` for menus, toolbars, special controls
+   - `lavender` for QStackedWidget
+   - `teal` for functional widgets
+   - `red` for overlays and floating layers
+   - `overlay` for basic/leaf controls
+
+5. **Literal `\n` in names** — For vertical button text (e.g., Chinese characters stacked vertically), use `\\n` in the name string. The renderer converts these to actual newlines via CSS `white-space: pre-line`.
+
+6. **Resize & Undo** — Each rendered widget box has resize handles (right, bottom, corner) visible on hover. Users can drag to resize and press Ctrl+Z to undo.
+
 ##### Data Type Diagram
 
 1. Create a dedicated "Data Types" diagram entry
@@ -246,6 +314,7 @@ As diagrams accumulate incrementally, the sidebar order follows this structure:
 3. **UI diagrams** (if applicable) — Widget hierarchy and event dispatch
 4. **Data Types** (if applicable) — Dataclass field listings and data flow
 5. **Config / Constants** (optional) — If central to understanding the code
+6. **🖼️ UI 布局** (if applicable) — Separated by a visual divider in the sidebar; contains UI layout views generated via `UI_LAYOUT_VIEWS`. These render as interactive nested widget-box trees (not node graphs)
 
 #### Element Mapping
 
