@@ -393,3 +393,4 @@ UI_LAYOUT_VIEWS.main_window = {
     ]
   }
 };
+```

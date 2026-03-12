@@ -4,11 +4,14 @@ description: >
   This skill generates interactive HTML node-graph diagrams to visualize codebase
   structure, class relationships, and function call chains. It should be used when
   the user asks to visualize, diagram, or map out code architecture, module
-  dependencies, class hierarchies, or UI event flows. The output is a standalone
-  HTML+JS viewer with draggable nodes, bezier-curve connections, group boxes,
-  sidebar navigation, global search (Ctrl+K), call-chain detail panel, localStorage
-  position persistence, click-to-copy function name, Ctrl+Z undo layout moves,
-  and Catppuccin Mocha dark theme.
+  dependencies, class hierarchies, or UI event flows. It also supports UI layout
+  visualization — generating interactive nested widget hierarchy diagrams for Qt,
+  React, or other UI frameworks (triggered by "UI layout", "widget hierarchy",
+  "界面布局", "控件层级" keywords). The output is a standalone HTML+JS viewer with
+  draggable nodes, bezier-curve connections, group boxes, sidebar navigation,
+  global search (Ctrl+K), call-chain detail panel, localStorage position persistence,
+  click-to-copy function name, Ctrl+Z undo layout moves, interactive widget-box
+  tree with resize handles, and Catppuccin Mocha dark theme.
 ---
 
 # Code Flow Graph

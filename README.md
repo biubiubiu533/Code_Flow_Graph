@@ -26,6 +26,12 @@ Below are screenshots from analyzing the [AuroraView](https://github.com/loongha
 
 *Click `show_embedded()` to trace the DCC embedded entry flow — the viewer highlights the active path and dims unrelated nodes.*
 
+### UI Layout Visualization
+
+![UI Layout Visualization](images/example_ui.jpg)
+
+*Interactive widget hierarchy viewer — nested layout boxes with color-coded widget types, resize handles on hover, stack/tab switching, and Ctrl+Z undo. Sidebar shows "🖼️ UI 布局" section for layout views.*
+
 ## Features
 
 - **Interactive Node Graph** — Draggable nodes with bezier-curve connections, pan & zoom

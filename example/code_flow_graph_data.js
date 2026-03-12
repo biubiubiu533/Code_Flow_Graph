@@ -976,3 +976,65 @@ DIAGRAMS.data_flow = {
     { id: 'g-api', label: 'External API', color: '#6c7086', bg: 'rgba(108,112,134,0.04)', nodes: ['api'] },
   ],
 };
+
+// ═══════════════════════════════════════════════════════════
+//  UI Layout Views (optional — widget hierarchy visualization)
+// ═══════════════════════════════════════════════════════════
+
+var UI_LAYOUT_VIEWS = {};
+
+UI_LAYOUT_VIEWS.main_window = {
+  title: 'MainWindow — 完整布局',
+  sub: 'app/main_window.py — QMainWindow',
+  navLabel: '🏠 MainWindow',
+  navSub: '主窗口完整布局',
+  root: {
+    name: 'MainWindow', obj: 'QMainWindow', color: 'blue',
+    badge: 'WINDOW', layout: 'v',
+    note: 'setWindowTitle("MVVM Demo App")',
+    children: [
+      {
+        name: 'menu_bar', obj: 'QMenuBar', color: 'yellow', badge: 'MENU',
+        layout: 'h', h: 30,
+        children: [
+          { name: '"File"', obj: 'QMenu', color: 'overlay', badge: 'MENU', leaf: true },
+          { name: '"Edit"', obj: 'QMenu', color: 'overlay', badge: 'MENU', leaf: true },
+          { name: '"View"', obj: 'QMenu', color: 'overlay', badge: 'MENU', leaf: true },
+        ]
+      },
+      {
+        name: 'central_widget', obj: 'QWidget', color: 'blue', badge: 'FRAME',
+        layout: 'h', flex: 1,
+        children: [
+          {
+            name: 'sidebar', obj: 'QListWidget', color: 'mauve', badge: 'LIST',
+            layout: 'v', w: 200,
+            children: [
+              { name: '"Users"', obj: 'QListWidgetItem', color: 'overlay', badge: 'ITEM', leaf: true },
+              { name: '"Tasks"', obj: 'QListWidgetItem', color: 'overlay', badge: 'ITEM', leaf: true },
+              { name: '"Settings"', obj: 'QListWidgetItem', color: 'overlay', badge: 'ITEM', leaf: true },
+            ]
+          },
+          {
+            name: 'content_stack', obj: 'QStackedWidget', color: 'lavender', badge: 'STACK',
+            layout: 'stack', flex: 1,
+            stackTabs: [
+              { label: '[0] Users', key: 'users', active: true },
+              { label: '[1] Tasks', key: 'tasks' },
+              { label: '[2] Settings', key: 'settings' },
+            ],
+            stackPages: {
+              users: { name: 'user_list_view', obj: 'UserListView', color: 'green', badge: 'VIEW', placeholder: '用户列表视图 (QTableView)' },
+              tasks: { name: 'task_board_view', obj: 'TaskBoardView', color: 'peach', badge: 'VIEW', placeholder: '任务看板视图 (QGraphicsView)' },
+              settings: { name: 'settings_form', obj: 'SettingsForm', color: 'teal', badge: 'FORM', placeholder: '设置表单 (QFormLayout)' },
+            },
+          },
+        ]
+      },
+      {
+        name: 'status_bar', obj: 'QStatusBar', color: 'overlay', badge: 'BAR',
+        leaf: true, h: 24, note: '底部状态栏',
+      },
+    ]
+  }
+};

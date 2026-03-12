@@ -151,6 +151,74 @@ svg#svg path.dim{opacity:.06}
 /* Copy toast notification */
 .copy-toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(49,50,68,.85);color:#6c7086;border:1px solid #45475a;border-radius:6px;padding:6px 14px;font-size:11px;font-family:'Consolas',monospace;z-index:20000;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══════════════ UI Layout Viewer Styles ═══════════════ */
+/* Separator in sidebar */
+.nav-separator{padding:6px 16px;font-size:10px;font-weight:bold;color:#585b70;text-transform:uppercase;letter-spacing:1px;border-top:1px solid #313244;margin-top:6px}
+/* UI Layout canvas */
+#ui-layout-area{flex:1;display:none;flex-direction:column;overflow:hidden}
+#ui-layout-area.active{display:flex}
+#ui-layout-header{padding:16px 24px;border-bottom:1px solid #313244;background:#181825}
+#ui-layout-header h1{font-size:18px;font-weight:700;color:#cdd6f4}
+#ui-layout-header p{font-size:12px;color:#6c7086;margin-top:4px}
+#ui-layout-wrap{flex:1;overflow:auto;padding:24px;position:relative}
+#ui-layout-legend{padding:12px 16px;border-top:1px solid #313244;background:#181825;font-size:11px;display:flex;flex-wrap:wrap;gap:12px}
+.ul-legend-item{display:flex;align-items:center;gap:5px}
+.ul-legend-swatch{width:12px;height:12px;border-radius:2px;border:1.5px solid}
+/* Widget box */
+.widget-box{border:1.5px solid;border-radius:6px;position:relative;overflow:visible;transition:box-shadow .15s;background:rgba(30,30,46,0.6);min-width:0;min-height:0;display:flex;flex-direction:column}
+.widget-box:hover{box-shadow:0 0 12px rgba(137,180,250,0.15);z-index:10}
+.widget-box>.wb-header{display:flex;align-items:flex-start;gap:4px;padding:3px 6px;border-radius:5px 5px 0 0;font-size:10px;font-weight:600;min-height:20px;flex-shrink:0;overflow:hidden}
+.wb-badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;flex-shrink:0}
+.wb-name{overflow:hidden;text-overflow:ellipsis;min-width:0;white-space:pre-line;line-height:1.3}
+.wb-body{padding:4px;display:flex;flex-direction:column;gap:3px;min-width:0;overflow:auto}
+.wb-body.h-layout{flex-direction:row}
+.wb-body.h-layout>*{min-width:0}
+.wb-body.v-layout{flex-direction:column}
+.wb-body.v-layout>*{min-height:0}
+/* Color themes for widget-box */
+.wc-blue{border-color:#89b4fa}.wc-blue>.wb-header{background:rgba(137,180,250,0.15);color:#89b4fa}.wc-blue .wb-badge{background:#89b4fa;color:#1e1e2e}
+.wc-sapphire{border-color:#74c7ec}.wc-sapphire>.wb-header{background:rgba(116,199,236,0.15);color:#74c7ec}.wc-sapphire .wb-badge{background:#74c7ec;color:#1e1e2e}
+.wc-green{border-color:#a6e3a1}.wc-green>.wb-header{background:rgba(166,227,161,0.15);color:#a6e3a1}.wc-green .wb-badge{background:#a6e3a1;color:#1e1e2e}
+.wc-peach{border-color:#fab387}.wc-peach>.wb-header{background:rgba(250,179,135,0.15);color:#fab387}.wc-peach .wb-badge{background:#fab387;color:#1e1e2e}
+.wc-mauve{border-color:#cba6f7}.wc-mauve>.wb-header{background:rgba(203,166,247,0.15);color:#cba6f7}.wc-mauve .wb-badge{background:#cba6f7;color:#1e1e2e}
+.wc-red{border-color:#f38ba8}.wc-red>.wb-header{background:rgba(243,139,168,0.15);color:#f38ba8}.wc-red .wb-badge{background:#f38ba8;color:#1e1e2e}
+.wc-pink{border-color:#f5c2e7}.wc-pink>.wb-header{background:rgba(245,194,231,0.15);color:#f5c2e7}.wc-pink .wb-badge{background:#f5c2e7;color:#1e1e2e}
+.wc-yellow{border-color:#f9e2af}.wc-yellow>.wb-header{background:rgba(249,226,175,0.15);color:#f9e2af}.wc-yellow .wb-badge{background:#f9e2af;color:#1e1e2e}
+.wc-teal{border-color:#94e2d5}.wc-teal>.wb-header{background:rgba(148,226,213,0.15);color:#94e2d5}.wc-teal .wb-badge{background:#94e2d5;color:#1e1e2e}
+.wc-flamingo{border-color:#f2cdcd}.wc-flamingo>.wb-header{background:rgba(242,205,205,0.15);color:#f2cdcd}.wc-flamingo .wb-badge{background:#f2cdcd;color:#1e1e2e}
+.wc-lavender{border-color:#b4befe}.wc-lavender>.wb-header{background:rgba(180,190,254,0.15);color:#b4befe}.wc-lavender .wb-badge{background:#b4befe;color:#1e1e2e}
+.wc-rosewater{border-color:#f5e0dc}.wc-rosewater>.wb-header{background:rgba(245,224,220,0.15);color:#f5e0dc}.wc-rosewater .wb-badge{background:#f5e0dc;color:#1e1e2e}
+.wc-overlay{border-color:#313244}.wc-overlay>.wb-header{background:rgba(49,50,68,0.5);color:#a6adc8}.wc-overlay .wb-badge{background:#313244;color:#cdd6f4}
+/* Stack tabs inside widget-box */
+.ul-stack-tabs{display:flex;gap:2px;padding:2px 4px;flex-wrap:wrap;flex-shrink:0;min-height:24px}
+.ul-stack-tab{padding:2px 8px;border-radius:3px;font-size:10px;cursor:pointer;border:1px solid #313244;background:rgba(49,50,68,0.3);color:#a6adc8;transition:all .15s;white-space:nowrap}
+.ul-stack-tab.active{background:rgba(137,180,250,0.2);border-color:#89b4fa;color:#89b4fa}
+.ul-stack-tab:hover{background:rgba(137,180,250,0.12)}
+.ul-stack-page{display:none;flex:1;min-height:0;min-width:0;overflow:hidden}
+.ul-stack-page.active{display:flex;flex-direction:column;gap:3px}
+/* Other UI layout helpers */
+.ul-placeholder{display:flex;align-items:center;justify-content:center;font-size:11px;color:#a6adc8;font-style:italic;border:1px dashed #313244;border-radius:4px;padding:8px;min-height:32px;background:rgba(49,50,68,0.15)}
+.ul-size-ann{position:absolute;top:2px;right:6px;font-size:9px;color:#a6adc8;opacity:.7}
+.ul-splitter-v{width:8px;min-width:8px;background:repeating-linear-gradient(0deg,transparent,transparent 3px,#313244 3px,#313244 5px);border-radius:2px;flex-shrink:0;cursor:col-resize;opacity:.5}
+.ul-stretch{flex:1;min-height:8px;min-width:8px;background:repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(108,112,134,0.1) 4px,rgba(108,112,134,0.1) 6px);border-radius:3px}
+/* Resize handles */
+.ul-resize{position:absolute;z-index:20;opacity:0;transition:opacity .15s}
+.widget-box:hover>.ul-resize{opacity:1}
+.ul-resize-r{top:0;right:-3px;width:6px;height:100%;cursor:ew-resize}
+.ul-resize-b{bottom:-3px;left:0;width:100%;height:6px;cursor:ns-resize}
+.ul-resize-rb{bottom:-3px;right:-3px;width:12px;height:12px;cursor:nwse-resize}
+.ul-resize-r:hover,.ul-resize-r.active{background:rgba(137,180,250,0.3)}
+.ul-resize-b:hover,.ul-resize-b.active{background:rgba(137,180,250,0.3)}
+.ul-resize-rb:hover,.ul-resize-rb.active{background:rgba(137,180,250,0.5);border-radius:2px}
+/* Tooltip for UI layout */
+.ul-tooltip{position:fixed;background:#2a2a3e;border:1px solid #313244;border-radius:6px;padding:8px 12px;font-size:11px;color:#cdd6f4;max-width:320px;z-index:9999;pointer-events:none;display:none;box-shadow:0 4px 16px rgba(0,0,0,0.4);line-height:1.5}
+.ul-tooltip .tt-type{color:#cba6f7;font-weight:600}
+.ul-tooltip .tt-obj{color:#a6e3a1}
+.ul-tooltip .tt-size{color:#fab387}
+/* Undo toast for UI layout */
+#ul-undo-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(42,42,62,0.95);border:1px solid #89b4fa;color:#cdd6f4;padding:8px 16px;border-radius:6px;font-size:12px;z-index:9999;pointer-events:none;opacity:0;transition:opacity .3s}
+#ul-undo-toast.show{opacity:1}
 </style>
 </head>
 <body>
@@ -188,7 +256,15 @@ svg#svg path.dim{opacity:.06}
       <div class="dp-body" id="dpBody"></div>
     </div>
   </div>
+  <!-- UI Layout Area (hidden by default, shown when a UI_LAYOUT_VIEWS entry is selected) -->
+  <div id="ui-layout-area">
+    <div id="ui-layout-header"><h1 id="ulTitle"></h1><p id="ulSub"></p></div>
+    <div id="ui-layout-wrap"></div>
+    <div id="ui-layout-legend"></div>
+  </div>
 </div>
+<div class="ul-tooltip" id="ulTooltip"></div>
+<div id="ul-undo-toast">⌘Z / Ctrl+Z 撤销</div>
 <div class="controls">
   <div class="row">
     <button id="zoomIn" title="Zoom In">+</button>
@@ -1468,6 +1544,399 @@ document.addEventListener('keydown', function(e) {
     searchBox.blur();
   }
 }, true); // <-- capture phase ensures we get the event before any inner element
+
+// ======================== UI LAYOUT VIEWER ENGINE ========================
+// Integrated viewer for Qt/UI widget hierarchy visualization.
+// Activated when code_flow_graph_data.js defines UI_LAYOUT_VIEWS.
+
+(function() {
+  if (typeof UI_LAYOUT_VIEWS === 'undefined') return;
+
+  var ulArea = document.getElementById('ui-layout-area');
+  var ulWrap = document.getElementById('ui-layout-wrap');
+  var ulTitle = document.getElementById('ulTitle');
+  var ulSub = document.getElementById('ulSub');
+  var ulLegend = document.getElementById('ui-layout-legend');
+  var ulTooltip = document.getElementById('ulTooltip');
+  var ulUndoToast = document.getElementById('ul-undo-toast');
+  var ulUndoStack = [];
+  var ulToastTimer = null;
+  var currentUlView = null;
+
+  // Add separator + nav items to sidebar
+  var sep = document.createElement('div');
+  sep.className = 'nav-separator';
+  sep.textContent = '🖼️ UI 布局';
+  navList.appendChild(sep);
+
+  var ulViewKeys = Object.keys(UI_LAYOUT_VIEWS);
+  ulViewKeys.forEach(function(key) {
+    var view = UI_LAYOUT_VIEWS[key];
+    var item = document.createElement('div');
+    item.className = 'nav-item';
+    item.dataset.ulView = key;
+    item.innerHTML = '<span class="nav-label">' + view.navLabel + '</span><span class="nav-sub">' + (view.navSub || '') + '</span>';
+    item.addEventListener('click', function() { switchUlView(key); });
+    navList.appendChild(item);
+  });
+
+  function switchUlView(key) {
+    currentUlView = key;
+    var view = UI_LAYOUT_VIEWS[key];
+
+    // Deactivate code flow graph mode
+    currentDiagramKey = null;
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('content-area').style.display = 'none';
+    ulArea.classList.add('active');
+
+    // Update sidebar active
+    document.querySelectorAll('.nav-item').forEach(function(el) {
+      el.classList.toggle('active', el.dataset.ulView === key);
+    });
+
+    // Update header
+    ulTitle.textContent = view.title;
+    ulSub.textContent = view.sub;
+
+    // Clear undo stack
+    ulUndoStack.length = 0;
+
+    // Render
+    ulWrap.innerHTML = '';
+    var el = ulRenderNode(view.root, 0);
+    el.style.width = '100%';
+    el.style.minHeight = '600px';
+    el.style.height = 'auto';
+    ulWrap.appendChild(el);
+
+    // Legend
+    ulRenderLegend(view.legend);
+  }
+
+  // Hook into diagram switching to hide UI layout
+  var origSwitchDiagram = window.switchDiagram || switchDiagram;
+  // We override by wrapping: when a diagram is selected, hide UI layout
+  var origNavClickHandler = null;
+  // Instead, we hook into the nav click for diagram items
+  document.querySelectorAll('.nav-item[data-diagram]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      currentUlView = null;
+      ulArea.classList.remove('active');
+      document.getElementById('header').style.display = '';
+      document.getElementById('content-area').style.display = '';
+      document.querySelectorAll('.nav-item[data-ul-view]').forEach(function(e) { e.classList.remove('active'); });
+    });
+  });
+
+  // ── Render Functions ──
+
+  function ulEscHtml(s, brNewline) {
+    if (!s) return '';
+    var out = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    out = out.replace(/\\n/g, brNewline ? '<br>' : '\n');
+    return out;
+  }
+
+  function ulRenderNode(node, depth) {
+    if (node.spacer) {
+      var sp = document.createElement('div');
+      sp.className = 'ul-stretch';
+      sp.title = node.name || 'stretch';
+      return sp;
+    }
+
+    var box = document.createElement('div');
+    box.className = 'widget-box wc-' + (node.color || 'overlay');
+
+    if (node.w) { box.style.width = node.w + 'px'; box.style.minWidth = node.w + 'px'; box.style.flexShrink = '0'; }
+    if (node.h) { box.style.height = node.h + 'px'; box.style.minHeight = node.h + 'px'; box.style.flexShrink = '0'; box.style.flexGrow = '0'; }
+    if (node.splitWeight) { box.style.flex = node.splitWeight; }
+    else if (node.flex) { box.style.flex = node.flex; }
+
+    // Tooltip
+    box.addEventListener('mouseenter', function(e) {
+      e.stopPropagation();
+      var html = '<span class="tt-type">' + (node.badge || 'WIDGET') + '</span> <span class="tt-obj">' + ulEscHtml(node.obj || '', true) + '</span>';
+      html += '<br><b>' + ulEscHtml(node.name, true) + '</b>';
+      if (node.note) html += '<br>' + ulEscHtml(node.note, true);
+      if (node.w) html += '<br><span class="tt-size">width: ' + node.w + 'px</span>';
+      if (node.h) html += '<br><span class="tt-size">height: ' + node.h + 'px</span>';
+      if (node.splitWeight) html += '<br><span class="tt-size">split weight: ' + node.splitWeight + '</span>';
+      ulTooltip.innerHTML = html;
+      ulTooltip.style.display = 'block';
+      ulPositionTooltip(e);
+    });
+    box.addEventListener('mousemove', ulPositionTooltip);
+    box.addEventListener('mouseleave', function(e) { e.stopPropagation(); ulTooltip.style.display = 'none'; });
+
+    // Header
+    var hdr = document.createElement('div');
+    hdr.className = 'wb-header';
+    hdr.innerHTML = '<span class="wb-badge">' + (node.badge || 'W') + '</span><span class="wb-name">' + ulEscHtml(node.name) + '</span>';
+    box.appendChild(hdr);
+
+    // Size annotation
+    if (node.w || node.h || node.splitWeight) {
+      var ann = document.createElement('div');
+      ann.className = 'ul-size-ann';
+      var parts = [];
+      if (node.w) parts.push('w:' + node.w);
+      if (node.h) parts.push('h:' + node.h);
+      if (node.splitWeight) parts.push('flex:' + node.splitWeight);
+      ann.textContent = parts.join(' ');
+      box.appendChild(ann);
+    }
+
+    // Placeholder
+    if (node.placeholder && !node.children && !node.stackPages && !node.tabPages) {
+      var pl = document.createElement('div');
+      pl.className = 'ul-placeholder';
+      pl.textContent = node.placeholder;
+      pl.style.flex = '1'; pl.style.margin = '4px';
+      box.appendChild(pl);
+      ulAddResizeHandles(box);
+      return box;
+    }
+
+    // Leaf
+    if (node.leaf) { ulAddResizeHandles(box); return box; }
+
+    // Body
+    var body = document.createElement('div');
+    body.className = 'wb-body';
+    body.style.flex = '1';
+
+    if (node.layout === 'h') { body.classList.add('h-layout'); }
+    else if (node.layout === 'v') { body.classList.add('v-layout'); }
+    else if (node.layout === 'hsplit') { body.classList.add('h-layout'); }
+    else if (node.layout === 'stack' && node.stackTabs && node.stackPages) {
+      ulRenderStack(box, body, node, depth);
+      ulAddResizeHandles(box);
+      return box;
+    } else if (node.layout === 'tab' && node.tabTabs && node.tabPages) {
+      ulRenderTab(box, body, node, depth);
+      ulAddResizeHandles(box);
+      return box;
+    }
+
+    // Render children
+    if (node.children) {
+      node.children.forEach(function(child, i) {
+        if (node.layout === 'hsplit' && i > 0 && !child.spacer) {
+          var handle = document.createElement('div');
+          handle.className = 'ul-splitter-v';
+          handle.title = '⇔ QSplitter handle (8px)';
+          body.appendChild(handle);
+        }
+        body.appendChild(ulRenderNode(child, depth + 1));
+      });
+    }
+
+    box.appendChild(body);
+    ulAddResizeHandles(box);
+    return box;
+  }
+
+  function ulRenderStack(box, body, node, depth) {
+    var tabs = document.createElement('div');
+    tabs.className = 'ul-stack-tabs';
+    var stackId = 'ulstk-' + Math.random().toString(36).slice(2, 8);
+
+    node.stackTabs.forEach(function(tab) {
+      var btn = document.createElement('div');
+      btn.className = 'ul-stack-tab' + (tab.active ? ' active' : '');
+      btn.textContent = tab.label;
+      btn.dataset.key = tab.key;
+      btn.dataset.stack = stackId;
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        document.querySelectorAll('.ul-stack-tab[data-stack="' + stackId + '"]').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.ul-stack-page[data-stack="' + stackId + '"]').forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        var page = document.querySelector('.ul-stack-page[data-stack="' + stackId + '"][data-key="' + tab.key + '"]');
+        if (page) page.classList.add('active');
+      };
+      tabs.appendChild(btn);
+    });
+    box.appendChild(tabs);
+
+    body.classList.add('v-layout');
+    body.style.position = 'relative';
+
+    if (node.stackPages) {
+      Object.keys(node.stackPages).forEach(function(key) {
+        var page = node.stackPages[key];
+        var pageDiv = document.createElement('div');
+        var isActive = node.stackTabs.some(function(t) { return t.key === key && t.active; });
+        pageDiv.className = 'ul-stack-page' + (isActive ? ' active' : '');
+        pageDiv.dataset.stack = stackId;
+        pageDiv.dataset.key = key;
+        var pageEl = ulRenderNode(page, depth + 1);
+        pageEl.style.flex = '1';
+        pageDiv.appendChild(pageEl);
+        body.appendChild(pageDiv);
+      });
+    }
+
+    if (node.children) {
+      node.children.forEach(function(child) {
+        if (child.stackPages && node.stackPages) return;
+        body.appendChild(ulRenderNode(child, depth + 1));
+      });
+    }
+
+    box.appendChild(body);
+  }
+
+  function ulRenderTab(box, body, node, depth) {
+    var tabs = document.createElement('div');
+    tabs.className = 'ul-stack-tabs';
+    tabs.style.borderBottom = '1px solid #313244';
+    var tabId = 'ultab-' + Math.random().toString(36).slice(2, 8);
+
+    node.tabTabs.forEach(function(tab) {
+      var btn = document.createElement('div');
+      btn.className = 'ul-stack-tab' + (tab.active ? ' active' : '');
+      btn.textContent = tab.label;
+      btn.dataset.key = tab.key;
+      btn.dataset.tab = tabId;
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        document.querySelectorAll('.ul-stack-tab[data-tab="' + tabId + '"]').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.ul-stack-page[data-tab="' + tabId + '"]').forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        var page = document.querySelector('.ul-stack-page[data-tab="' + tabId + '"][data-key="' + tab.key + '"]');
+        if (page) page.classList.add('active');
+      };
+      tabs.appendChild(btn);
+    });
+    box.appendChild(tabs);
+
+    body.classList.add('v-layout');
+
+    if (node.tabPages) {
+      Object.keys(node.tabPages).forEach(function(key) {
+        var page = node.tabPages[key];
+        var pageDiv = document.createElement('div');
+        var isActive = node.tabTabs.some(function(t) { return t.key === key && t.active; });
+        pageDiv.className = 'ul-stack-page' + (isActive ? ' active' : '');
+        pageDiv.dataset.tab = tabId;
+        pageDiv.dataset.key = key;
+        var pageEl = ulRenderNode(page, depth + 1);
+        pageEl.style.flex = '1';
+        pageDiv.appendChild(pageEl);
+        body.appendChild(pageDiv);
+      });
+    }
+
+    box.appendChild(body);
+  }
+
+  function ulPositionTooltip(e) {
+    var x = e.clientX + 12, y = e.clientY + 12;
+    var rect = ulTooltip.getBoundingClientRect();
+    if (x + 320 > window.innerWidth) x = e.clientX - 320 - 12;
+    if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 12;
+    ulTooltip.style.left = x + 'px';
+    ulTooltip.style.top = y + 'px';
+  }
+
+  function ulRenderLegend(customLegend) {
+    var items = customLegend || [
+      {color:'blue',label:'容器 / 框架'},{color:'sapphire',label:'Tab Widget'},
+      {color:'green',label:'面部整形'},{color:'peach',label:'身体工坊'},
+      {color:'pink',label:'材质实验室'},{color:'flamingo',label:'毛发工作室'},
+      {color:'mauve',label:'动画剧场'},{color:'yellow',label:'菜单 / 环形控件'},
+      {color:'lavender',label:'QStackedWidget'},{color:'teal',label:'功能 Widget'},
+      {color:'red',label:'浮动覆盖层'},{color:'overlay',label:'基础控件'}
+    ];
+    ulLegend.innerHTML = items.map(function(it) {
+      return '<div class="ul-legend-item"><div class="ul-legend-swatch" style="border-color:' + colorVar(it.color) + '"></div>' + it.label + '</div>';
+    }).join('');
+  }
+
+  function colorVar(c) {
+    var map = {blue:'#89b4fa',sapphire:'#74c7ec',green:'#a6e3a1',peach:'#fab387',mauve:'#cba6f7',red:'#f38ba8',pink:'#f5c2e7',yellow:'#f9e2af',teal:'#94e2d5',flamingo:'#f2cdcd',lavender:'#b4befe',rosewater:'#f5e0dc',overlay:'#313244'};
+    return map[c] || '#313244';
+  }
+
+  // ── Resize & Undo ──
+
+  function ulShowToast(msg) {
+    ulUndoToast.textContent = msg || '⌘Z / Ctrl+Z 撤销';
+    ulUndoToast.classList.add('show');
+    clearTimeout(ulToastTimer);
+    ulToastTimer = setTimeout(function() { ulUndoToast.classList.remove('show'); }, 1800);
+  }
+
+  function ulPushUndo(el, prop, oldValue) {
+    ulUndoStack.push({el: el, prop: prop, oldValue: oldValue});
+  }
+
+  function ulUndo() {
+    if (!ulUndoStack.length) return;
+    var action = ulUndoStack.pop();
+    if (action.prop === 'width') { action.el.style.width = action.oldValue; action.el.style.minWidth = action.oldValue; }
+    else if (action.prop === 'height') { action.el.style.height = action.oldValue; action.el.style.minHeight = action.oldValue; action.el.style.flexGrow = ''; action.el.style.flexShrink = ''; }
+    else if (action.prop === 'flex') { action.el.style.flex = action.oldValue; }
+    ulShowToast('已撤销 (剩余 ' + ulUndoStack.length + ' 步)');
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (currentUlView && (e.ctrlKey || e.metaKey) && e.key === 'z') {
+      var tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      e.preventDefault();
+      e.stopPropagation();
+      ulUndo();
+    }
+  }, true);
+
+  function ulAddResizeHandles(box) {
+    var hr = document.createElement('div'); hr.className = 'ul-resize ul-resize-r'; box.appendChild(hr);
+    var hb = document.createElement('div'); hb.className = 'ul-resize ul-resize-b'; box.appendChild(hb);
+    var hrb = document.createElement('div'); hrb.className = 'ul-resize ul-resize-rb'; box.appendChild(hrb);
+
+    var resizing = false, resizeType = null, startX, startY, startW, startH, savedW, savedH, savedFlex;
+
+    function onDown(type, e) {
+      e.preventDefault(); e.stopPropagation();
+      resizing = true; resizeType = type;
+      startX = e.clientX; startY = e.clientY;
+      var rect = box.getBoundingClientRect();
+      startW = rect.width; startH = rect.height;
+      savedW = box.style.width; savedH = box.style.height; savedFlex = box.style.flex;
+      if (type === 'r') hr.classList.add('active');
+      else if (type === 'b') hb.classList.add('active');
+      else { hr.classList.add('active'); hb.classList.add('active'); hrb.classList.add('active'); }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    }
+
+    function onMove(e) {
+      if (!resizing) return;
+      var dx = e.clientX - startX, dy = e.clientY - startY;
+      if (resizeType === 'r' || resizeType === 'rb') { var nw = Math.max(30, startW + dx); box.style.width = nw + 'px'; box.style.minWidth = nw + 'px'; box.style.flex = 'none'; }
+      if (resizeType === 'b' || resizeType === 'rb') { var nh = Math.max(20, startH + dy); box.style.height = nh + 'px'; box.style.minHeight = nh + 'px'; box.style.flexGrow = '0'; box.style.flexShrink = '0'; }
+    }
+
+    function onUp() {
+      if (!resizing) return;
+      resizing = false;
+      hr.classList.remove('active'); hb.classList.remove('active'); hrb.classList.remove('active');
+      if (resizeType === 'r' || resizeType === 'rb') { ulPushUndo(box, 'width', savedW); ulPushUndo(box, 'flex', savedFlex); }
+      if (resizeType === 'b' || resizeType === 'rb') { ulPushUndo(box, 'height', savedH); }
+      ulShowToast('已调整大小 — Ctrl+Z 撤销 (' + ulUndoStack.length + ' 步)');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+
+    hr.addEventListener('mousedown', function(e) { onDown('r', e); });
+    hb.addEventListener('mousedown', function(e) { onDown('b', e); });
+    hrb.addEventListener('mousedown', function(e) { onDown('rb', e); });
+  }
+})();
 </script>
 </body>
 </html>
