@@ -29,10 +29,12 @@ Generate interactive node-graph HTML diagrams that visualize code structure and 
 
 The output consists of two files placed in a dedicated folder:
 
-1. **`code_flow_graph.html`** — rendering engine (copy from `example/code_flow_graph.html`)
+1. **`code_flow_graph.html`** — rendering engine (from this skill's `example/code_flow_graph.html` template)
 2. **`code_flow_graph_data.js`** — diagram data (generated per-project)
 
 The HTML loads the JS via `<script src="code_flow_graph_data.js">` and must be in the same directory.
+
+> **Important**: The HTML template lives in **this skill's repository**, not in the user's project. See Step 3 for the correct procedure to locate and copy it.
 
 ## Workflow
 
@@ -97,7 +99,18 @@ The final output path is always `<project>/docs/code_graph/` unless overridden b
 
 ### Step 3: Copy the HTML Engine
 
-Copy `example/code_flow_graph.html` to the output folder. Do not modify it.
+The HTML viewer template is located at `example/code_flow_graph.html` **relative to this skill's definition file (SKILL.md)**. It is NOT inside the user's project.
+
+#### How to locate the template
+
+1. Determine the **skill directory** — the folder containing this SKILL.md file. The skill loading mechanism provides this path; it is typically visible in the file paths used when the skill was loaded.
+2. Construct the template path: `<skill_directory>/example/code_flow_graph.html`
+3. Use `read_file` to read the template's complete content from that path.
+4. Use `write_to_file` to write the content to `<output_folder>/code_flow_graph.html`.
+
+**Do NOT modify the HTML content.** Copy it verbatim.
+
+> **Common failure mode**: If you try to read `example/code_flow_graph.html` as a relative path, it resolves against the user's project root — where the file does not exist. You MUST use the absolute path based on the skill's installation directory.
 
 #### Engine Features (built-in, code_flow_graph.html)
 
@@ -107,10 +120,11 @@ Copy `example/code_flow_graph.html` to the output folder. Do not modify it.
 4. **Enhanced Legend** — Node type badges (CLASS/MODULE/FUNC/ENTRY/DATA/UI CLASS) on header; `external: true` nodes get dashed border + EXT tag; connection color semantics (call/data/extern/signal) with gradient indicating direction
 5. **Signature Tooltips** — Hover any function attr to see full signature; callChain attrs show "Click to view call chain →" hint
 6. **Call Chain Detail Panel** — Click attrs with `callChain` to open right-side interactive call tree; each item shows a `desc` (description) explaining what the function does; clicking any item with a matching graph node highlights that node and pans the viewport to it
-7. **Position Persistence** — Node positions saved to localStorage per diagram; "Reset Layout" restores defaults
-8. **Click to Copy** — Clicking any function attr automatically copies the function name to clipboard and shows a toast notification
-9. **Undo Layout Moves** — Ctrl+Z undoes the last node/group drag operation (up to 50 steps); undo stack is cleared when switching diagrams
-10. **Connection Anchor via offsetTop** — Connection line anchors use `offsetTop`/`offsetParent` chain (NOT `getBoundingClientRect`) to compute attr Y-offset within a node. This is critical because the canvas uses `CSS transform: scale()` for zoom — `getBoundingClientRect` returns screen-space coordinates that include the scale factor, causing connection lines to misalign at non-1x zoom levels
+7. **Field Detail Panel** — Click attrs with `fieldDetail` (typically on `data` type nodes) to open right-side field computation panel; shows field name, type, summary, and all computation modes with ordered step lists. Function names in steps are auto-highlighted as `<code>` elements
+8. **Position Persistence** — Node positions saved to localStorage per diagram; "Reset Layout" restores defaults
+9. **Click to Copy** — Clicking any function attr automatically copies the function name to clipboard and shows a toast notification
+10. **Undo Layout Moves** — Ctrl+Z undoes the last node/group drag operation (up to 50 steps); undo stack is cleared when switching diagrams
+11. **Connection Anchor via offsetTop** — Connection line anchors use `offsetTop`/`offsetParent` chain (NOT `getBoundingClientRect`) to compute attr Y-offset within a node. This is critical because the canvas uses `CSS transform: scale()` for zoom — `getBoundingClientRect` returns screen-space coordinates that include the scale factor, causing connection lines to misalign at non-1x zoom levels
 
 ### Step 4: Generate Overview Diagram
 
@@ -300,9 +314,45 @@ UI_LAYOUT_VIEWS.main_window = {
 ##### Data Type Diagram
 
 1. Create a dedicated "Data Types" diagram entry
-2. Each dataclass → node with type `data`
-3. List fields as attrs with type in the `val` field
-4. Add a "Data Flow" node showing creation/consumption pipeline
+2. Each dataclass / data model / state class → node with type `data`
+3. List fields as attrs with type in the `val` field (e.g., `val: ': User[]'`)
+4. **Add `fieldDetail` to every non-trivial field attr** — This is the key feature that enables the right-sidebar "field computation" panel when users click a data field. For each field, analyze the source code to determine:
+   - **Where the field gets its initial value** (constructor, factory, default)
+   - **What operations modify the field** (reducers, setters, event handlers, API callbacks)
+   - **How the field is computed or derived** (selectors, computed properties, transformations)
+
+   Structure the `fieldDetail` as:
+   ```js
+   fieldDetail: {
+     field: 'fieldName',        // field name
+     type: 'FieldType',         // type annotation
+     summary: 'One-paragraph description of what this field represents and how it is managed.',
+     sources: [
+       {
+         mode: 'INITIAL',       // mode label describing the scenario
+         fn: 'constructor()',    // source function
+         steps: [               // ordered computation steps
+           'Step 1 — what happens',
+           'Step 2 — call someFunction() to process',
+           'Step 3 — assign result to field',
+         ],
+       },
+       {
+         mode: 'ON UPDATE',     // another scenario
+         fn: 'reducer(state, action)',
+         steps: [ ... ],
+       },
+     ],
+   }
+   ```
+   Each `sources` entry represents a different **scenario** in which the field value changes. Common modes: `INITIAL`, `ON FETCH`, `ON UPDATE`, `ON DELETE`, `ON FILTER`, `COMPUTED`, `ON EVENT`.
+
+5. Add connections between data nodes to show **data composition** (e.g., `AppState.users` → `UserState`) and **data flow** (e.g., Reducer → State field) using appropriate colors:
+   - Blue `#89b4fa` — data composition / ownership (parent state → child state)
+   - Green `#a6e3a1` — reducer / producer → state field (data creation)
+   - Pink dashed `#f5c2e7` — signal / event dispatch → handler
+   - Peach `#fab387` — external API dependency
+6. Optionally add "Reducer" / "Service" / "Middleware" nodes (type `function` or `class`) to show the **data flow pipeline** — how data enters, transforms, and reaches each field
 
 #### After Each Deep-Dive
 

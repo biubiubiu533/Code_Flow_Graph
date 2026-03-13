@@ -79,6 +79,22 @@ Each node represents a **class**, **module**, **function group**, or **UI compon
               ],
             },
           ],
+          fieldDetail: {              // optional: field computation detail for data-type attrs
+            field: 'field_name',      // field name displayed in the detail panel header
+            type: 'FieldType',        // type annotation shown next to field name
+            summary: 'One-paragraph description of the field purpose and how it is managed.',
+            sources: [                // array of computation/assignment modes (how the field gets its value)
+              {
+                mode: 'INITIAL',      // mode label (e.g., INITIAL, ON FETCH, ON UPDATE, ON FILTER)
+                fn: 'createStore()',   // source function or expression
+                steps: [              // ordered list of computation steps
+                  'Step 1: describe what happens first',
+                  'Step 2: describe the next operation (function names like foo() are auto-highlighted)',
+                  'Step 3: final result assignment',
+                ],
+              },
+            ],
+          },
         },
       ],
     },

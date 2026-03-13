@@ -517,6 +517,7 @@ function switchDiagram(key) {
             if (child.detail) attrDetailMap[child.id] = child.detail;
             if (child.io) attrIOMap[child.id] = child.io;
             if (child.callChain) attrCallChainMap[child.id] = child.callChain;
+            if (child.fieldDetail) attrFieldDetailMap[child.id] = child.fieldDetail;
             html += renderAttrHtml(child, true);
           });
           html += '</div>';
